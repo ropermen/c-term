@@ -7,6 +7,8 @@ class StorageService {
   static const String _connectionsKey = 'ssh_connections';
   static const String _keyboardKeysKey = 'keyboard_keys';
   static const String _biometricEnabledKey = 'biometric_enabled';
+  static const String _terminalFontSizeKey = 'terminal_font_size';
+  static const double defaultFontSize = 14.0;
 
   final FlutterSecureStorage _storage;
 
@@ -98,5 +100,15 @@ class StorageService {
 
   Future<void> setBiometricEnabled(bool enabled) async {
     await _storage.write(key: _biometricEnabledKey, value: enabled.toString());
+  }
+
+  Future<double> getTerminalFontSize() async {
+    final String? value = await _storage.read(key: _terminalFontSizeKey);
+    if (value == null) return defaultFontSize;
+    return double.tryParse(value) ?? defaultFontSize;
+  }
+
+  Future<void> setTerminalFontSize(double size) async {
+    await _storage.write(key: _terminalFontSizeKey, value: size.toString());
   }
 }

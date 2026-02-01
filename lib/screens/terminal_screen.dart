@@ -3,10 +3,124 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:xterm/xterm.dart';
 import '../providers/terminal_provider.dart';
+import '../services/storage_service.dart';
 import '../widgets/terminal_keyboard.dart';
 
-class TerminalScreen extends StatelessWidget {
+class TerminalScreen extends StatefulWidget {
   const TerminalScreen({super.key});
+
+  @override
+  State<TerminalScreen> createState() => _TerminalScreenState();
+}
+
+class _TerminalScreenState extends State<TerminalScreen> {
+  final _storageService = StorageService();
+  double _fontSize = StorageService.defaultFontSize;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFontSize();
+  }
+
+  Future<void> _loadFontSize() async {
+    final size = await _storageService.getTerminalFontSize();
+    if (mounted) {
+      setState(() => _fontSize = size);
+    }
+  }
+
+  Future<void> _setFontSize(double size) async {
+    await _storageService.setTerminalFontSize(size);
+    if (mounted) {
+      setState(() => _fontSize = size);
+    }
+  }
+
+  void _showFontSizeDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('Tamanho da fonte'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  IconButton(
+                    onPressed: _fontSize > 8
+                        ? () {
+                            final newSize = _fontSize - 1;
+                            setDialogState(() {});
+                            _setFontSize(newSize);
+                          }
+                        : null,
+                    icon: const Icon(Icons.remove_circle_outline),
+                  ),
+                  Container(
+                    width: 60,
+                    alignment: Alignment.center,
+                    child: Text(
+                      '${_fontSize.toInt()}',
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: _fontSize < 32
+                        ? () {
+                            final newSize = _fontSize + 1;
+                            setDialogState(() {});
+                            _setFontSize(newSize);
+                          }
+                        : null,
+                    icon: const Icon(Icons.add_circle_outline),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Slider(
+                value: _fontSize,
+                min: 8,
+                max: 32,
+                divisions: 24,
+                label: '${_fontSize.toInt()}',
+                onChanged: (value) {
+                  setDialogState(() {});
+                  _setFontSize(value.roundToDouble());
+                },
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                children: [10, 12, 14, 16, 18, 20].map((size) {
+                  final isSelected = _fontSize.toInt() == size;
+                  return ChoiceChip(
+                    label: Text('$size'),
+                    selected: isSelected,
+                    onSelected: (_) {
+                      setDialogState(() {});
+                      _setFontSize(size.toDouble());
+                    },
+                  );
+                }).toList(),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('Fechar'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -69,6 +183,11 @@ class TerminalScreen extends StatelessWidget {
             iconTheme: const IconThemeData(color: Colors.white),
             actions: [
               IconButton(
+                icon: const Icon(Icons.text_fields, color: Colors.white),
+                tooltip: 'Tamanho da fonte',
+                onPressed: () => _showFontSizeDialog(context),
+              ),
+              IconButton(
                 icon: const Icon(Icons.clear_all, color: Colors.white),
                 tooltip: 'Fechar todas as sessoes',
                 onPressed: () {
@@ -107,7 +226,7 @@ class TerminalScreen extends StatelessWidget {
                 : null,
           ),
           body: provider.activeSession != null
-              ? _TerminalView(session: provider.activeSession!)
+              ? _TerminalView(session: provider.activeSession!, fontSize: _fontSize)
               : const Center(
                   child: Text(
                     'Selecione uma sessao',
@@ -199,8 +318,9 @@ class _TabBar extends StatelessWidget {
 
 class _TerminalView extends StatefulWidget {
   final TerminalSession session;
+  final double fontSize;
 
-  const _TerminalView({required this.session});
+  const _TerminalView({required this.session, required this.fontSize});
 
   @override
   State<_TerminalView> createState() => _TerminalViewState();
@@ -274,8 +394,8 @@ class _TerminalViewState extends State<_TerminalView> {
             padding: const EdgeInsets.all(8),
             autofocus: true,
             backgroundOpacity: 1.0,
-            textStyle: const TerminalStyle(
-              fontSize: 14,
+            textStyle: TerminalStyle(
+              fontSize: widget.fontSize,
               fontFamily: 'monospace',
             ),
           ),
