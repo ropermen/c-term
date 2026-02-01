@@ -19,7 +19,8 @@ class TerminalKeyboard extends StatefulWidget {
   State<TerminalKeyboard> createState() => _TerminalKeyboardState();
 }
 
-class _TerminalKeyboardState extends State<TerminalKeyboard> {
+class _TerminalKeyboardState extends State<TerminalKeyboard>
+    with WidgetsBindingObserver {
   bool _ctrlPressed = false;
   bool _altPressed = false;
   bool _shiftPressed = false;
@@ -28,9 +29,28 @@ class _TerminalKeyboardState extends State<TerminalKeyboard> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<KeyboardProvider>().loadKeys();
     });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && _keyboardLocked) {
+      Future.delayed(const Duration(milliseconds: 100), () {
+        if (mounted && _keyboardLocked) {
+          widget.terminalFocusNode?.requestFocus();
+          SystemChannels.textInput.invokeMethod('TextInput.show');
+        }
+      });
+    }
   }
 
   void _toggleKeyboard() {
