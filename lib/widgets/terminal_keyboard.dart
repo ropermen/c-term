@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show SystemChannels;
 import 'package:provider/provider.dart';
 import '../providers/keyboard_provider.dart';
 import '../models/keyboard_key.dart';
@@ -20,6 +21,10 @@ class _TerminalKeyboardState extends State<TerminalKeyboard> {
   bool _ctrlPressed = false;
   bool _altPressed = false;
   bool _shiftPressed = false;
+  bool _keyboardLocked = false;
+  final FocusNode _focusNode = FocusNode();
+  final TextEditingController _textController = TextEditingController();
+  String _lastText = '';
 
   @override
   void initState() {
@@ -27,6 +32,38 @@ class _TerminalKeyboardState extends State<TerminalKeyboard> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<KeyboardProvider>().loadKeys();
     });
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    _textController.dispose();
+    super.dispose();
+  }
+
+  void _onTextChanged(String text) {
+    if (text.length > _lastText.length) {
+      // New character(s) added
+      final newChars = text.substring(_lastText.length);
+      widget.onKeyPressed(newChars);
+    } else if (text.length < _lastText.length) {
+      // Backspace pressed
+      widget.onKeyPressed('\x7F'); // DEL character
+    }
+    _lastText = text;
+  }
+
+  void _toggleKeyboard() {
+    setState(() {
+      _keyboardLocked = !_keyboardLocked;
+    });
+    if (_keyboardLocked) {
+      _focusNode.requestFocus();
+      SystemChannels.textInput.invokeMethod('TextInput.show');
+    } else {
+      _focusNode.unfocus();
+      SystemChannels.textInput.invokeMethod('TextInput.hide');
+    }
   }
 
   void _handleKeyPress(KeyboardKey key) {
@@ -215,6 +252,47 @@ class _TerminalKeyboardState extends State<TerminalKeyboard> {
             ),
           ),
           const SizedBox(width: 2),
+          // Toggle Android keyboard button
+          Material(
+            color: _keyboardLocked ? const Color(0xFF5B8DEF) : const Color(0xFF3C3C3E),
+            borderRadius: BorderRadius.circular(4),
+            child: InkWell(
+              onTap: _toggleKeyboard,
+              borderRadius: BorderRadius.circular(4),
+              child: Container(
+                width: 32,
+                height: 28,
+                alignment: Alignment.center,
+                child: Icon(
+                  _keyboardLocked ? Icons.keyboard_hide : Icons.keyboard_alt_outlined,
+                  size: 16,
+                  color: _keyboardLocked ? Colors.black : Colors.grey.shade400,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 2),
+          // Hidden text field to capture keyboard input
+          SizedBox(
+            width: 1,
+            height: 1,
+            child: Opacity(
+              opacity: 0,
+              child: TextField(
+                focusNode: _focusNode,
+                controller: _textController,
+                autofocus: false,
+                showCursor: false,
+                enableSuggestions: false,
+                autocorrect: false,
+                decoration: const InputDecoration(
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.zero,
+                ),
+                onChanged: _onTextChanged,
+              ),
+            ),
+          ),
           // Text input button
           Material(
             color: const Color(0xFF3C3C3E),
