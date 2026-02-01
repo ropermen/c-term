@@ -166,18 +166,34 @@ class _TerminalKeyboardState extends State<TerminalKeyboard> {
           );
         }
 
-        return Container(
-          constraints: const BoxConstraints(maxHeight: 88),
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(8),
-            child: Wrap(
-              spacing: 4,
-              runSpacing: 4,
-              children: enabledKeys.map((key) => _buildKey(key)).toList(),
-            ),
-          ),
+        // Split keys into two rows
+        final midpoint = (enabledKeys.length / 2).ceil();
+        final firstRowKeys = enabledKeys.take(midpoint).toList();
+        final secondRowKeys = enabledKeys.skip(midpoint).toList();
+
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildKeyRow(firstRowKeys),
+            if (secondRowKeys.isNotEmpty) ...[
+              const SizedBox(height: 4),
+              _buildKeyRow(secondRowKeys),
+            ],
+          ],
         );
       },
+    );
+  }
+
+  Widget _buildKeyRow(List<KeyboardKey> keys) {
+    return SizedBox(
+      height: 40,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        itemCount: keys.length,
+        itemBuilder: (context, index) => _buildKey(keys[index]),
+      ),
     );
   }
 
