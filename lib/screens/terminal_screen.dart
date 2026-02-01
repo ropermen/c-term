@@ -29,11 +29,43 @@ class TerminalScreen extends StatelessWidget {
           );
         }
 
+        final activeSession = provider.activeSession;
         return Scaffold(
           backgroundColor: const Color(0xFF1E1E1E),
           appBar: AppBar(
             backgroundColor: const Color(0xFF2D2D2D),
-            title: const Text('Terminal', style: TextStyle(color: Colors.white)),
+            title: Row(
+              children: [
+                const Text('Terminal', style: TextStyle(color: Colors.white)),
+                const Spacer(),
+                if (activeSession != null) ...[
+                  Text(
+                    activeSession.isConnected
+                        ? 'Conectado'
+                        : activeSession.isConnecting
+                            ? 'Conectando...'
+                            : 'Desconectado',
+                    style: TextStyle(
+                      color: Colors.grey.shade400,
+                      fontSize: 12,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Container(
+                    width: 10,
+                    height: 10,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: activeSession.isConnected
+                          ? Colors.green
+                          : activeSession.isConnecting
+                              ? Colors.orange
+                              : Colors.red,
+                    ),
+                  ),
+                ],
+              ],
+            ),
             iconTheme: const IconThemeData(color: Colors.white),
             actions: [
               IconButton(
@@ -249,61 +281,43 @@ class _TerminalViewState extends State<_TerminalView> {
             ),
           ),
         ),
-        _buildStatusBar(),
         if (_showKeyboard)
           TerminalKeyboard(
             onKeyPressed: _sendToTerminal,
+            onToggleKeyboard: () => setState(() => _showKeyboard = false),
           )
         else
-          SizedBox(height: MediaQuery.of(context).padding.bottom),
+          _buildMinimizedBar(),
       ],
     );
   }
 
-  Widget _buildStatusBar() {
+  Widget _buildMinimizedBar() {
     return Container(
-      height: 32,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      color: const Color(0xFF007ACC),
-      child: Row(
-        children: [
-          Icon(
-            widget.session.isConnected
-                ? Icons.link
-                : Icons.link_off,
-            color: Colors.white,
-            size: 14,
+      color: const Color(0xFF252526),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+          child: Row(
+            children: [
+              Material(
+                color: const Color(0xFF3D3D3D),
+                borderRadius: BorderRadius.circular(4),
+                child: InkWell(
+                  onTap: () => setState(() => _showKeyboard = true),
+                  borderRadius: BorderRadius.circular(4),
+                  child: Container(
+                    width: 32,
+                    height: 28,
+                    alignment: Alignment.center,
+                    child: Icon(Icons.keyboard, size: 16, color: Colors.grey.shade400),
+                  ),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 6),
-          Text(
-            '${widget.session.connection.username}@${widget.session.connection.host}',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 12,
-            ),
-          ),
-          const Spacer(),
-          Text(
-            widget.session.isConnected
-                ? 'Conectado'
-                : widget.session.isConnecting
-                    ? 'Conectando...'
-                    : 'Desconectado',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 12,
-            ),
-          ),
-          const SizedBox(width: 12),
-          InkWell(
-            onTap: () => setState(() => _showKeyboard = !_showKeyboard),
-            child: Icon(
-              _showKeyboard ? Icons.keyboard_hide : Icons.keyboard,
-              color: Colors.white,
-              size: 18,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

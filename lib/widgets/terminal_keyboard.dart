@@ -6,10 +6,12 @@ import '../screens/keyboard_settings_screen.dart';
 
 class TerminalKeyboard extends StatefulWidget {
   final void Function(String) onKeyPressed;
+  final VoidCallback onToggleKeyboard;
 
   const TerminalKeyboard({
     super.key,
     required this.onKeyPressed,
+    required this.onToggleKeyboard,
   });
 
   @override
@@ -101,52 +103,7 @@ class _TerminalKeyboardState extends State<TerminalKeyboard> {
       color: const Color(0xFF252526),
       child: SafeArea(
         top: false,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildHeader(),
-            const Divider(height: 1, color: Color(0xFF3D3D3D)),
-            _buildKeyboard(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader() {
-    return Container(
-      height: 40,
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: Row(
-        children: [
-          if (_ctrlPressed || _altPressed)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              margin: const EdgeInsets.only(right: 8),
-              decoration: BoxDecoration(
-                color: const Color(0xFF4EC9B0),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                _ctrlPressed ? 'Ctrl' : 'Alt',
-                style: const TextStyle(
-                  color: Colors.black,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          const Spacer(),
-          IconButton(
-            icon: Icon(Icons.settings, size: 20, color: Colors.grey.shade400),
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const KeyboardSettingsScreen()),
-              );
-            },
-            tooltip: 'Configurar teclas',
-          ),
-        ],
+        child: _buildKeyboard(),
       ),
     );
   }
@@ -156,16 +113,6 @@ class _TerminalKeyboardState extends State<TerminalKeyboard> {
       builder: (context, provider, _) {
         final enabledKeys = provider.enabledKeys;
 
-        if (enabledKeys.isEmpty) {
-          return Padding(
-            padding: const EdgeInsets.all(16),
-            child: Text(
-              'Nenhuma tecla configurada. Toque em configuracoes.',
-              style: TextStyle(color: Colors.grey.shade500),
-            ),
-          );
-        }
-
         // Split keys into two rows
         final midpoint = (enabledKeys.length / 2).ceil();
         final firstRowKeys = enabledKeys.take(midpoint).toList();
@@ -174,9 +121,9 @@ class _TerminalKeyboardState extends State<TerminalKeyboard> {
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _buildKeyRow(firstRowKeys),
+            _buildFirstRow(firstRowKeys),
             if (secondRowKeys.isNotEmpty) ...[
-              const SizedBox(height: 4),
+              const SizedBox(height: 2),
               _buildKeyRow(secondRowKeys),
             ],
           ],
@@ -185,9 +132,86 @@ class _TerminalKeyboardState extends State<TerminalKeyboard> {
     );
   }
 
+  Widget _buildFirstRow(List<KeyboardKey> keys) {
+    return SizedBox(
+      height: 32,
+      child: Row(
+        children: [
+          const SizedBox(width: 4),
+          // Minimize keyboard button
+          _buildControlButton(
+            icon: Icons.keyboard_hide,
+            onTap: widget.onToggleKeyboard,
+            tooltip: 'Minimizar teclado',
+          ),
+          const SizedBox(width: 2),
+          // Settings button
+          _buildControlButton(
+            icon: Icons.settings,
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const KeyboardSettingsScreen()),
+              );
+            },
+            tooltip: 'Configurar teclas',
+          ),
+          const SizedBox(width: 2),
+          // Modifier indicator
+          if (_ctrlPressed || _altPressed)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              margin: const EdgeInsets.only(right: 4),
+              decoration: BoxDecoration(
+                color: const Color(0xFF4EC9B0),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                _ctrlPressed ? 'Ctrl' : 'Alt',
+                style: const TextStyle(
+                  color: Colors.black,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          // Keys
+          Expanded(
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.only(left: 4, right: 8),
+              itemCount: keys.length,
+              itemBuilder: (context, index) => _buildKey(keys[index]),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildControlButton({
+    required IconData icon,
+    required VoidCallback onTap,
+    required String tooltip,
+  }) {
+    return Material(
+      color: const Color(0xFF3D3D3D),
+      borderRadius: BorderRadius.circular(4),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(4),
+        child: Container(
+          width: 32,
+          height: 28,
+          alignment: Alignment.center,
+          child: Icon(icon, size: 16, color: Colors.grey.shade400),
+        ),
+      ),
+    );
+  }
+
   Widget _buildKeyRow(List<KeyboardKey> keys) {
     return SizedBox(
-      height: 40,
+      height: 32,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -208,37 +232,37 @@ class _TerminalKeyboardState extends State<TerminalKeyboard> {
     if (key.id == 'right') icon = Icons.arrow_forward;
 
     return Padding(
-      padding: const EdgeInsets.only(right: 4),
+      padding: const EdgeInsets.only(right: 2),
       child: Material(
         color: isActive
             ? const Color(0xFF4EC9B0)
             : key.isModifier
                 ? const Color(0xFF3D5A5A)
                 : const Color(0xFF3D3D3D),
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(4),
         child: InkWell(
           onTap: () => _handleKeyPress(key),
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: BorderRadius.circular(4),
           child: Container(
-            constraints: const BoxConstraints(minWidth: 44),
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-            child: Center(
-              child: icon != null
-                  ? Icon(
-                      icon,
-                      size: 16,
+            constraints: const BoxConstraints(minWidth: 32),
+            height: 28,
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            alignment: Alignment.center,
+            child: icon != null
+                ? Icon(
+                    icon,
+                    size: 14,
+                    color: isActive ? Colors.black : Colors.white,
+                  )
+                : Text(
+                    key.label,
+                    style: TextStyle(
                       color: isActive ? Colors.black : Colors.white,
-                    )
-                  : Text(
-                      key.label,
-                      style: TextStyle(
-                        color: isActive ? Colors.black : Colors.white,
-                        fontSize: 12,
-                        fontFamily: 'monospace',
-                        fontWeight: FontWeight.w500,
-                      ),
+                      fontSize: 11,
+                      fontFamily: 'monospace',
+                      fontWeight: FontWeight.w500,
                     ),
-            ),
+                  ),
           ),
         ),
       ),
