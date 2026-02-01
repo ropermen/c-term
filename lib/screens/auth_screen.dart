@@ -78,7 +78,7 @@ class _AuthScreenState extends State<AuthScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1E1E1E),
+      backgroundColor: const Color(0xFF1C1C1E),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -86,7 +86,7 @@ class _AuthScreenState extends State<AuthScreen> {
             const Icon(
               Icons.terminal,
               size: 80,
-              color: Color(0xFF2196F3),
+              color: Color(0xFF5B8DEF),
             ),
             const SizedBox(height: 24),
             const Text(
@@ -110,7 +110,7 @@ class _AuthScreenState extends State<AuthScreen> {
               const Column(
                 children: [
                   CircularProgressIndicator(
-                    color: Color(0xFF2196F3),
+                    color: Color(0xFF5B8DEF),
                   ),
                   SizedBox(height: 16),
                   Text(
@@ -139,7 +139,7 @@ class _AuthScreenState extends State<AuthScreen> {
                     icon: const Icon(Icons.fingerprint),
                     label: const Text('Tentar novamente'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2196F3),
+                      backgroundColor: const Color(0xFF5B8DEF),
                       foregroundColor: Colors.black,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 32,
@@ -155,7 +155,7 @@ class _AuthScreenState extends State<AuthScreen> {
                   const Icon(
                     Icons.fingerprint,
                     size: 64,
-                    color: Color(0xFF2196F3),
+                    color: Color(0xFF5B8DEF),
                   ),
                   const SizedBox(height: 16),
                   ElevatedButton.icon(
@@ -163,7 +163,7 @@ class _AuthScreenState extends State<AuthScreen> {
                     icon: const Icon(Icons.lock_open),
                     label: const Text('Desbloquear'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2196F3),
+                      backgroundColor: const Color(0xFF5B8DEF),
                       foregroundColor: Colors.black,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 32,

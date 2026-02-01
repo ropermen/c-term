@@ -22,9 +22,9 @@ class _KeyboardSettingsScreenState extends State<KeyboardSettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1E1E1E),
+      backgroundColor: const Color(0xFF1C1C1E),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF2D2D2D),
+        backgroundColor: const Color(0xFF2C2C2E),
         title: const Text('Configurar Teclado', style: TextStyle(color: Colors.white)),
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
@@ -60,7 +60,7 @@ class _KeyboardSettingsScreenState extends State<KeyboardSettingsScreen> {
         builder: (context, provider, _) {
           if (provider.isLoading) {
             return const Center(
-              child: CircularProgressIndicator(color: Color(0xFF2196F3)),
+              child: CircularProgressIndicator(color: Color(0xFF5B8DEF)),
             );
           }
 
@@ -88,7 +88,7 @@ class _KeyboardSettingsScreenState extends State<KeyboardSettingsScreen> {
                 currentRow: 2,
               ),
               const SizedBox(height: 16),
-              const Divider(color: Color(0xFF3D3D3D)),
+              const Divider(color: Color(0xFF3C3C3E)),
               const SizedBox(height: 8),
               _buildSectionHeader('Teclas Disponiveis'),
               const SizedBox(height: 8),
@@ -129,7 +129,7 @@ class _KeysRow extends StatelessWidget {
       return Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: const Color(0xFF2D2D2D),
+          color: const Color(0xFF2C2C2E),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Text(
@@ -174,7 +174,7 @@ class _KeyChip extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF2D2D2D),
+        color: const Color(0xFF2C2C2E),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -200,13 +200,13 @@ class _KeyChip extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
               decoration: BoxDecoration(
                 color: keyData.isModifier
-                    ? const Color(0xFF2196F3).withOpacity(0.2)
-                    : const Color(0xFF3D3D3D),
+                    ? const Color(0xFF5B8DEF).withOpacity(0.2)
+                    : const Color(0xFF3C3C3E),
               ),
               child: Text(
                 keyData.label,
                 style: TextStyle(
-                  color: keyData.isModifier ? const Color(0xFF2196F3) : Colors.white,
+                  color: keyData.isModifier ? const Color(0xFF5B8DEF) : Colors.white,
                   fontFamily: 'monospace',
                   fontWeight: FontWeight.w500,
                 ),
@@ -260,7 +260,7 @@ class _DisabledKeysList extends StatelessWidget {
       return Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: const Color(0xFF2D2D2D),
+          color: const Color(0xFF2C2C2E),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Text(
@@ -279,7 +279,7 @@ class _DisabledKeysList extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            color: const Color(0xFF3D3D3D),
+            color: const Color(0xFF3C3C3E),
             borderRadius: BorderRadius.circular(8),
             border: Border.all(color: const Color(0xFF4D4D4D)),
           ),

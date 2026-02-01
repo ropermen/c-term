@@ -105,9 +105,9 @@ class _ConnectionFormScreenState extends State<ConnectionFormScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1E1E1E),
+      backgroundColor: const Color(0xFF1C1C1E),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF2D2D2D),
+        backgroundColor: const Color(0xFF2C2C2E),
         title: Text(
           _isEditing ? 'Editar Conexão' : 'Nova Conexão',
           style: const TextStyle(color: Colors.white),
@@ -180,7 +180,7 @@ class _ConnectionFormScreenState extends State<ConnectionFormScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFF2D2D2D),
+                color: const Color(0xFF2C2C2E),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
@@ -266,7 +266,7 @@ class _ConnectionFormScreenState extends State<ConnectionFormScreen> {
               child: ElevatedButton(
                 onPressed: _isSaving ? null : _saveConnection,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF2196F3),
+                  backgroundColor: const Color(0xFF5B8DEF),
                   foregroundColor: Colors.black,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -321,7 +321,7 @@ class _ConnectionFormScreenState extends State<ConnectionFormScreen> {
         prefixIcon: Icon(icon, color: Colors.grey.shade400),
         suffixIcon: suffixIcon,
         filled: true,
-        fillColor: const Color(0xFF2D2D2D),
+        fillColor: const Color(0xFF2C2C2E),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
@@ -332,7 +332,7 @@ class _ConnectionFormScreenState extends State<ConnectionFormScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFF2196F3), width: 2),
+          borderSide: const BorderSide(color: Color(0xFF5B8DEF), width: 2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -370,11 +370,11 @@ class _AuthMethodButton extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color(0xFF2196F3).withOpacity(0.2)
+              ? const Color(0xFF5B8DEF).withOpacity(0.2)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: isSelected ? const Color(0xFF2196F3) : Colors.grey.shade600,
+            color: isSelected ? const Color(0xFF5B8DEF) : Colors.grey.shade600,
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -383,14 +383,14 @@ class _AuthMethodButton extends StatelessWidget {
           children: [
             Icon(
               icon,
-              color: isSelected ? const Color(0xFF2196F3) : Colors.grey,
+              color: isSelected ? const Color(0xFF5B8DEF) : Colors.grey,
               size: 20,
             ),
             const SizedBox(width: 8),
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? const Color(0xFF2196F3) : Colors.grey,
+                color: isSelected ? const Color(0xFF5B8DEF) : Colors.grey,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               ),
             ),

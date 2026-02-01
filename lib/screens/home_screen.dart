@@ -166,12 +166,12 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1E1E1E),
+      backgroundColor: const Color(0xFF1C1C1E),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF2D2D2D),
+        backgroundColor: const Color(0xFF2C2C2E),
         title: const Row(
           children: [
-            Icon(Icons.terminal, color: Color(0xFF2196F3)),
+            Icon(Icons.terminal, color: Color(0xFF5B8DEF)),
             SizedBox(width: 8),
             Text('c-term', style: TextStyle(color: Colors.white)),
           ],
@@ -187,10 +187,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     MaterialPageRoute(builder: (_) => const TerminalScreen()),
                   );
                 },
-                icon: const Icon(Icons.terminal, color: Color(0xFF2196F3)),
+                icon: const Icon(Icons.terminal, color: Color(0xFF5B8DEF)),
                 label: Text(
                   '$sessionCount ativa${sessionCount > 1 ? 's' : ''}',
-                  style: const TextStyle(color: Color(0xFF2196F3)),
+                  style: const TextStyle(color: Color(0xFF5B8DEF)),
                 ),
               );
             },
@@ -206,7 +206,7 @@ class _HomeScreenState extends State<HomeScreen> {
         builder: (context, provider, _) {
           if (provider.isLoading) {
             return const Center(
-              child: CircularProgressIndicator(color: Color(0xFF2196F3)),
+              child: CircularProgressIndicator(color: Color(0xFF5B8DEF)),
             );
           }
 
@@ -264,7 +264,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           )
                         : null,
                     filled: true,
-                    fillColor: const Color(0xFF2D2D2D),
+                    fillColor: const Color(0xFF2C2C2E),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide.none,
@@ -362,7 +362,7 @@ class _HomeScreenState extends State<HomeScreen> {
             MaterialPageRoute(builder: (_) => const ConnectionFormScreen()),
           );
         },
-        backgroundColor: const Color(0xFF2196F3),
+        backgroundColor: const Color(0xFF5B8DEF),
         child: const Icon(Icons.add, color: Colors.black),
       ),
     );
@@ -392,7 +392,7 @@ class _ConnectionCard extends StatelessWidget {
         final isConnected = terminalProvider.hasSession(connection.id);
 
         return Card(
-          color: const Color(0xFF2D2D2D),
+          color: const Color(0xFF2C2C2E),
           margin: const EdgeInsets.only(bottom: 12),
           child: InkWell(
             onTap: onTap,
@@ -417,14 +417,14 @@ class _ConnectionCard extends StatelessWidget {
                     height: 48,
                     decoration: BoxDecoration(
                       color: isConnected
-                          ? const Color(0xFF2196F3).withOpacity(0.2)
+                          ? const Color(0xFF5B8DEF).withOpacity(0.2)
                           : Colors.grey.withOpacity(0.2),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(
                       Icons.dns,
                       color: isConnected
-                          ? const Color(0xFF2196F3)
+                          ? const Color(0xFF5B8DEF)
                           : Colors.grey,
                     ),
                   ),
@@ -452,13 +452,13 @@ class _ConnectionCard extends StatelessWidget {
                                   vertical: 2,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF2196F3).withOpacity(0.2),
+                                  color: const Color(0xFF5B8DEF).withOpacity(0.2),
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: const Text(
                                   'Conectado',
                                   style: TextStyle(
-                                    color: Color(0xFF2196F3),
+                                    color: Color(0xFF5B8DEF),
                                     fontSize: 12,
                                   ),
                                 ),

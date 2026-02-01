@@ -109,7 +109,7 @@ class _TerminalKeyboardState extends State<TerminalKeyboard> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: const Color(0xFF252526),
+      color: const Color(0xFF252528),
       child: SafeArea(
         top: false,
         child: _buildKeyboard(),
@@ -143,7 +143,7 @@ class _TerminalKeyboardState extends State<TerminalKeyboard> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF2D2D2D),
+        backgroundColor: const Color(0xFF2C2C2E),
         title: const Text(
           'Enviar texto',
           style: TextStyle(color: Colors.white),
@@ -156,7 +156,7 @@ class _TerminalKeyboardState extends State<TerminalKeyboard> {
             hintText: 'Digite o comando...',
             hintStyle: TextStyle(color: Colors.grey.shade500),
             filled: true,
-            fillColor: const Color(0xFF1E1E1E),
+            fillColor: const Color(0xFF1C1C1E),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide.none,
@@ -197,7 +197,7 @@ class _TerminalKeyboardState extends State<TerminalKeyboard> {
           const SizedBox(width: 4),
           // Keyboard settings button
           Material(
-            color: const Color(0xFF3D3D3D),
+            color: const Color(0xFF3C3C3E),
             borderRadius: BorderRadius.circular(4),
             child: InkWell(
               onTap: () {
@@ -217,7 +217,7 @@ class _TerminalKeyboardState extends State<TerminalKeyboard> {
           const SizedBox(width: 2),
           // Text input button
           Material(
-            color: const Color(0xFF3D3D3D),
+            color: const Color(0xFF3C3C3E),
             borderRadius: BorderRadius.circular(4),
             child: InkWell(
               onTap: _showTextInputDialog,
@@ -237,7 +237,7 @@ class _TerminalKeyboardState extends State<TerminalKeyboard> {
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               margin: const EdgeInsets.only(right: 4),
               decoration: BoxDecoration(
-                color: const Color(0xFF2196F3),
+                color: const Color(0xFF5B8DEF),
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
@@ -294,10 +294,10 @@ class _TerminalKeyboardState extends State<TerminalKeyboard> {
       padding: const EdgeInsets.only(right: 2),
       child: Material(
         color: isActive
-            ? const Color(0xFF2196F3)
+            ? const Color(0xFF5B8DEF)
             : key.isModifier
-                ? const Color(0xFF3D5A8A)
-                : const Color(0xFF3D3D3D),
+                ? const Color(0xFF3A4A6A)
+                : const Color(0xFF3C3C3E),
         borderRadius: BorderRadius.circular(4),
         child: InkWell(
           onTap: () => _handleKeyPress(key),

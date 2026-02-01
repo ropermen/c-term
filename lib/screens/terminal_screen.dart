@@ -128,9 +128,9 @@ class _TerminalScreenState extends State<TerminalScreen> {
       builder: (context, provider, _) {
         if (provider.sessions.isEmpty) {
           return Scaffold(
-            backgroundColor: const Color(0xFF1E1E1E),
+            backgroundColor: const Color(0xFF1C1C1E),
             appBar: AppBar(
-              backgroundColor: const Color(0xFF2D2D2D),
+              backgroundColor: const Color(0xFF2C2C2E),
               title: const Text('Terminal', style: TextStyle(color: Colors.white)),
               iconTheme: const IconThemeData(color: Colors.white),
             ),
@@ -145,9 +145,9 @@ class _TerminalScreenState extends State<TerminalScreen> {
 
         final activeSession = provider.activeSession;
         return Scaffold(
-          backgroundColor: const Color(0xFF1E1E1E),
+          backgroundColor: const Color(0xFF1C1C1E),
           appBar: AppBar(
-            backgroundColor: const Color(0xFF2D2D2D),
+            backgroundColor: const Color(0xFF2C2C2E),
             title: Row(
               children: [
                 const Text('Terminal', style: TextStyle(color: Colors.white)),
@@ -248,7 +248,7 @@ class _TabBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: 48,
-      color: const Color(0xFF252526),
+      color: const Color(0xFF252528),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: provider.sessionList.length,
@@ -261,11 +261,11 @@ class _TabBar extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
-                color: isActive ? const Color(0xFF1E1E1E) : Colors.transparent,
+                color: isActive ? const Color(0xFF1C1C1E) : Colors.transparent,
                 border: Border(
                   bottom: BorderSide(
                     color: isActive
-                        ? const Color(0xFF2196F3)
+                        ? const Color(0xFF5B8DEF)
                         : Colors.transparent,
                     width: 2,
                   ),
@@ -280,7 +280,7 @@ class _TabBar extends StatelessWidget {
                             ? Icons.hourglass_empty
                             : Icons.error_outline,
                     color: isActive
-                        ? const Color(0xFF2196F3)
+                        ? const Color(0xFF5B8DEF)
                         : Colors.grey,
                     size: 16,
                   ),
@@ -367,7 +367,7 @@ class _TerminalViewState extends State<_TerminalView> {
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(12),
-            color: const Color(0xFF2196F3).withOpacity(0.2),
+            color: const Color(0xFF5B8DEF).withOpacity(0.2),
             child: const Row(
               children: [
                 SizedBox(
@@ -375,13 +375,13 @@ class _TerminalViewState extends State<_TerminalView> {
                   height: 16,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    color: Color(0xFF2196F3),
+                    color: Color(0xFF5B8DEF),
                   ),
                 ),
                 SizedBox(width: 8),
                 Text(
                   'Conectando...',
-                  style: TextStyle(color: Color(0xFF2196F3), fontSize: 13),
+                  style: TextStyle(color: Color(0xFF5B8DEF), fontSize: 13),
                 ),
               ],
             ),
@@ -411,7 +411,7 @@ class _TerminalViewState extends State<_TerminalView> {
         cursor: Color(0xFFAEAFAD),
         selection: Color(0xFF264F78),
         foreground: Color(0xFFCCCCCC),
-        background: Color(0xFF1E1E1E),
+        background: Color(0xFF1C1C1E),
         black: Color(0xFF000000),
         red: Color(0xFFCD3131),
         green: Color(0xFF0DBC79),

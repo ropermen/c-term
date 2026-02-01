@@ -11,10 +11,10 @@ class CTermApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = ColorScheme.fromSeed(
-      seedColor: const Color(0xFF2196F3),
+      seedColor: const Color(0xFF5B8DEF),
       brightness: Brightness.dark,
-      surface: const Color(0xFF1E1E1E),
-      surfaceContainerHighest: const Color(0xFF2D2D2D),
+      surface: const Color(0xFF1C1C1E),
+      surfaceContainerHighest: const Color(0xFF2C2C2E),
     );
 
     return MultiProvider(
