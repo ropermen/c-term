@@ -126,6 +126,58 @@ class _TerminalKeyboardState extends State<TerminalKeyboard> {
     );
   }
 
+  void _showTextInputDialog() {
+    final textController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF2D2D2D),
+        title: const Text(
+          'Enviar texto',
+          style: TextStyle(color: Colors.white),
+        ),
+        content: TextField(
+          controller: textController,
+          autofocus: true,
+          style: const TextStyle(color: Colors.white, fontFamily: 'monospace'),
+          decoration: InputDecoration(
+            hintText: 'Digite o comando...',
+            hintStyle: TextStyle(color: Colors.grey.shade500),
+            filled: true,
+            fillColor: const Color(0xFF1E1E1E),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide.none,
+            ),
+          ),
+          onSubmitted: (value) {
+            if (value.isNotEmpty) {
+              widget.onKeyPressed(value);
+            }
+            Navigator.of(ctx).pop();
+          },
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () {
+              final text = textController.text;
+              if (text.isNotEmpty) {
+                widget.onKeyPressed(text);
+              }
+              Navigator.of(ctx).pop();
+            },
+            child: const Text('Enviar'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildFirstRow(List<KeyboardKey> keys) {
     return SizedBox(
       height: 32,
@@ -148,6 +200,22 @@ class _TerminalKeyboardState extends State<TerminalKeyboard> {
                 height: 28,
                 alignment: Alignment.center,
                 child: Icon(Icons.settings, size: 16, color: Colors.grey.shade400),
+              ),
+            ),
+          ),
+          const SizedBox(width: 2),
+          // Text input button
+          Material(
+            color: const Color(0xFF3D3D3D),
+            borderRadius: BorderRadius.circular(4),
+            child: InkWell(
+              onTap: _showTextInputDialog,
+              borderRadius: BorderRadius.circular(4),
+              child: Container(
+                width: 32,
+                height: 28,
+                alignment: Alignment.center,
+                child: Icon(Icons.keyboard, size: 16, color: Colors.grey.shade400),
               ),
             ),
           ),
