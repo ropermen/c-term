@@ -116,9 +116,8 @@ class TerminalProvider extends ChangeNotifier {
 
       shell.done.then((_) {
         session.isConnected = false;
-        terminal.write('\r\n[Conexao encerrada]\r\n');
         _updateWakelock();
-        notifyListeners();
+        closeSession(session.id);
       });
 
       terminal.onOutput = (data) {
