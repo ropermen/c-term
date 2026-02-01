@@ -129,6 +129,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final authService = AuthService();
     bool biometricEnabled = await storageService.isBiometricEnabled();
     bool biometricAvailable = await authService.isBiometricAvailable();
+    bool keepConnectionsAlive = await storageService.isKeepConnectionsAliveEnabled();
 
     if (!mounted) return;
 
@@ -163,6 +164,23 @@ class _HomeScreenState extends State<HomeScreen> {
                         setDialogState(() => biometricEnabled = value);
                       }
                     : null,
+              ),
+              const Divider(color: Color(0xFF3D3D3D)),
+              SwitchListTile(
+                title: const Text(
+                  'Manter conexoes ativas',
+                  style: TextStyle(color: Colors.white),
+                ),
+                subtitle: Text(
+                  'Manter SSH ativo ao fechar o app',
+                  style: TextStyle(color: Colors.grey.shade400, fontSize: 12),
+                ),
+                value: keepConnectionsAlive,
+                activeColor: const Color(0xFF4EC9B0),
+                onChanged: (value) async {
+                  await storageService.setKeepConnectionsAliveEnabled(value);
+                  setDialogState(() => keepConnectionsAlive = value);
+                },
               ),
             ],
           ),
