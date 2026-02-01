@@ -265,7 +265,7 @@ class _TabBar extends StatelessWidget {
                 border: Border(
                   bottom: BorderSide(
                     color: isActive
-                        ? const Color(0xFF4EC9B0)
+                        ? const Color(0xFF2196F3)
                         : Colors.transparent,
                     width: 2,
                   ),
@@ -280,7 +280,7 @@ class _TabBar extends StatelessWidget {
                             ? Icons.hourglass_empty
                             : Icons.error_outline,
                     color: isActive
-                        ? const Color(0xFF4EC9B0)
+                        ? const Color(0xFF2196F3)
                         : Colors.grey,
                     size: 16,
                   ),
@@ -367,7 +367,7 @@ class _TerminalViewState extends State<_TerminalView> {
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(12),
-            color: const Color(0xFF4EC9B0).withOpacity(0.2),
+            color: const Color(0xFF2196F3).withOpacity(0.2),
             child: const Row(
               children: [
                 SizedBox(
@@ -375,13 +375,13 @@ class _TerminalViewState extends State<_TerminalView> {
                   height: 16,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    color: Color(0xFF4EC9B0),
+                    color: Color(0xFF2196F3),
                   ),
                 ),
                 SizedBox(width: 8),
                 Text(
                   'Conectando...',
-                  style: TextStyle(color: Color(0xFF4EC9B0), fontSize: 13),
+                  style: TextStyle(color: Color(0xFF2196F3), fontSize: 13),
                 ),
               ],
             ),

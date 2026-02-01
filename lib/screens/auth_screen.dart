@@ -86,7 +86,7 @@ class _AuthScreenState extends State<AuthScreen> {
             const Icon(
               Icons.terminal,
               size: 80,
-              color: Color(0xFF4EC9B0),
+              color: Color(0xFF2196F3),
             ),
             const SizedBox(height: 24),
             const Text(
@@ -110,7 +110,7 @@ class _AuthScreenState extends State<AuthScreen> {
               const Column(
                 children: [
                   CircularProgressIndicator(
-                    color: Color(0xFF4EC9B0),
+                    color: Color(0xFF2196F3),
                   ),
                   SizedBox(height: 16),
                   Text(
@@ -139,7 +139,7 @@ class _AuthScreenState extends State<AuthScreen> {
                     icon: const Icon(Icons.fingerprint),
                     label: const Text('Tentar novamente'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF4EC9B0),
+                      backgroundColor: const Color(0xFF2196F3),
                       foregroundColor: Colors.black,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 32,
@@ -155,7 +155,7 @@ class _AuthScreenState extends State<AuthScreen> {
                   const Icon(
                     Icons.fingerprint,
                     size: 64,
-                    color: Color(0xFF4EC9B0),
+                    color: Color(0xFF2196F3),
                   ),
                   const SizedBox(height: 16),
                   ElevatedButton.icon(
@@ -163,7 +163,7 @@ class _AuthScreenState extends State<AuthScreen> {
                     icon: const Icon(Icons.lock_open),
                     label: const Text('Desbloquear'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF4EC9B0),
+                      backgroundColor: const Color(0xFF2196F3),
                       foregroundColor: Colors.black,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 32,

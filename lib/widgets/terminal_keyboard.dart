@@ -237,7 +237,7 @@ class _TerminalKeyboardState extends State<TerminalKeyboard> {
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               margin: const EdgeInsets.only(right: 4),
               decoration: BoxDecoration(
-                color: const Color(0xFF4EC9B0),
+                color: const Color(0xFF2196F3),
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
@@ -294,9 +294,9 @@ class _TerminalKeyboardState extends State<TerminalKeyboard> {
       padding: const EdgeInsets.only(right: 2),
       child: Material(
         color: isActive
-            ? const Color(0xFF4EC9B0)
+            ? const Color(0xFF2196F3)
             : key.isModifier
-                ? const Color(0xFF3D5A5A)
+                ? const Color(0xFF3D5A8A)
                 : const Color(0xFF3D3D3D),
         borderRadius: BorderRadius.circular(4),
         child: InkWell(

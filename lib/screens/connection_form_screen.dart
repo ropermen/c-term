@@ -266,7 +266,7 @@ class _ConnectionFormScreenState extends State<ConnectionFormScreen> {
               child: ElevatedButton(
                 onPressed: _isSaving ? null : _saveConnection,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF4EC9B0),
+                  backgroundColor: const Color(0xFF2196F3),
                   foregroundColor: Colors.black,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -332,7 +332,7 @@ class _ConnectionFormScreenState extends State<ConnectionFormScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFF4EC9B0), width: 2),
+          borderSide: const BorderSide(color: Color(0xFF2196F3), width: 2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -370,11 +370,11 @@ class _AuthMethodButton extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color(0xFF4EC9B0).withOpacity(0.2)
+              ? const Color(0xFF2196F3).withOpacity(0.2)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: isSelected ? const Color(0xFF4EC9B0) : Colors.grey.shade600,
+            color: isSelected ? const Color(0xFF2196F3) : Colors.grey.shade600,
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -383,14 +383,14 @@ class _AuthMethodButton extends StatelessWidget {
           children: [
             Icon(
               icon,
-              color: isSelected ? const Color(0xFF4EC9B0) : Colors.grey,
+              color: isSelected ? const Color(0xFF2196F3) : Colors.grey,
               size: 20,
             ),
             const SizedBox(width: 8),
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? const Color(0xFF4EC9B0) : Colors.grey,
+                color: isSelected ? const Color(0xFF2196F3) : Colors.grey,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               ),
             ),

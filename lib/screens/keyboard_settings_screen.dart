@@ -60,7 +60,7 @@ class _KeyboardSettingsScreenState extends State<KeyboardSettingsScreen> {
         builder: (context, provider, _) {
           if (provider.isLoading) {
             return const Center(
-              child: CircularProgressIndicator(color: Color(0xFF4EC9B0)),
+              child: CircularProgressIndicator(color: Color(0xFF2196F3)),
             );
           }
 
@@ -200,13 +200,13 @@ class _KeyChip extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
               decoration: BoxDecoration(
                 color: keyData.isModifier
-                    ? const Color(0xFF4EC9B0).withOpacity(0.2)
+                    ? const Color(0xFF2196F3).withOpacity(0.2)
                     : const Color(0xFF3D3D3D),
               ),
               child: Text(
                 keyData.label,
                 style: TextStyle(
-                  color: keyData.isModifier ? const Color(0xFF4EC9B0) : Colors.white,
+                  color: keyData.isModifier ? const Color(0xFF2196F3) : Colors.white,
                   fontFamily: 'monospace',
                   fontWeight: FontWeight.w500,
                 ),
