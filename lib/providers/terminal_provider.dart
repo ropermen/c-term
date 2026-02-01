@@ -66,11 +66,11 @@ class TerminalProvider extends ChangeNotifier {
       SSHClient client;
 
       if (connection.privateKey != null && connection.privateKey!.isNotEmpty) {
-        final keyPair = SSHKeyPair.fromPem(connection.privateKey!);
+        final keyPairs = SSHKeyPair.fromPem(connection.privateKey!);
         client = SSHClient(
           socket,
           username: connection.username,
-          identities: [keyPair],
+          identities: keyPairs,
         );
       } else if (connection.password != null) {
         client = SSHClient(

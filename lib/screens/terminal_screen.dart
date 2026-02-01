@@ -35,7 +35,7 @@ class TerminalScreen extends StatelessWidget {
             iconTheme: const IconThemeData(color: Colors.white),
             actions: [
               IconButton(
-                icon: const Icon(Icons.close_all, color: Colors.white),
+                icon: const Icon(Icons.clear_all, color: Colors.white),
                 tooltip: 'Fechar todas as sessões',
                 onPressed: () {
                   showDialog(
