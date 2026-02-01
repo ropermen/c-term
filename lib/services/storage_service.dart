@@ -6,6 +6,7 @@ import '../models/keyboard_key.dart';
 class StorageService {
   static const String _connectionsKey = 'ssh_connections';
   static const String _keyboardKeysKey = 'keyboard_keys';
+  static const String _biometricEnabledKey = 'biometric_enabled';
 
   final FlutterSecureStorage _storage;
 
@@ -88,5 +89,14 @@ class StorageService {
 
   Future<void> resetKeyboardKeys() async {
     await _storage.delete(key: _keyboardKeysKey);
+  }
+
+  Future<bool> isBiometricEnabled() async {
+    final String? value = await _storage.read(key: _biometricEnabledKey);
+    return value == 'true';
+  }
+
+  Future<void> setBiometricEnabled(bool enabled) async {
+    await _storage.write(key: _biometricEnabledKey, value: enabled.toString());
   }
 }

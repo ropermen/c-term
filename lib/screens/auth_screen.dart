@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import '../services/storage_service.dart';
 import 'home_screen.dart';
 
 class AuthScreen extends StatefulWidget {
@@ -11,12 +12,28 @@ class AuthScreen extends StatefulWidget {
 
 class _AuthScreenState extends State<AuthScreen> {
   final AuthService _authService = AuthService();
+  final StorageService _storageService = StorageService();
   bool _isAuthenticating = false;
   String? _error;
 
   @override
   void initState() {
     super.initState();
+    _checkBiometricAndAuthenticate();
+  }
+
+  Future<void> _checkBiometricAndAuthenticate() async {
+    final biometricEnabled = await _storageService.isBiometricEnabled();
+
+    if (!biometricEnabled) {
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const HomeScreen()),
+        );
+      }
+      return;
+    }
+
     _authenticate();
   }
 

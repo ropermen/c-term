@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import '../providers/connections_provider.dart';
 import '../providers/terminal_provider.dart';
 import '../models/ssh_connection.dart';
+import '../services/storage_service.dart';
+import '../services/auth_service.dart';
 import 'connection_form_screen.dart';
 import 'terminal_screen.dart';
 
@@ -122,6 +124,59 @@ class _HomeScreenState extends State<HomeScreen> {
     provider.reorderConnections(oldIndex, newIndex);
   }
 
+  Future<void> _showSettingsDialog() async {
+    final storageService = StorageService();
+    final authService = AuthService();
+    bool biometricEnabled = await storageService.isBiometricEnabled();
+    bool biometricAvailable = await authService.isBiometricAvailable();
+
+    if (!mounted) return;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          backgroundColor: const Color(0xFF2D2D2D),
+          title: const Text(
+            'Configuracoes',
+            style: TextStyle(color: Colors.white),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SwitchListTile(
+                title: const Text(
+                  'Autenticacao biometrica',
+                  style: TextStyle(color: Colors.white),
+                ),
+                subtitle: Text(
+                  biometricAvailable
+                      ? 'Exigir biometria ao abrir o app'
+                      : 'Nao disponivel neste dispositivo',
+                  style: TextStyle(color: Colors.grey.shade400, fontSize: 12),
+                ),
+                value: biometricEnabled,
+                activeColor: const Color(0xFF4EC9B0),
+                onChanged: biometricAvailable
+                    ? (value) async {
+                        await storageService.setBiometricEnabled(value);
+                        setDialogState(() => biometricEnabled = value);
+                      }
+                    : null,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('Fechar'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -153,6 +208,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               );
             },
+          ),
+          IconButton(
+            icon: const Icon(Icons.settings, color: Colors.white),
+            tooltip: 'Configuracoes',
+            onPressed: () => _showSettingsDialog(),
           ),
         ],
       ),
