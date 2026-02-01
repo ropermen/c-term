@@ -68,8 +68,9 @@ class KeyboardKey {
       // Modifiers
       KeyboardKey(id: 'ctrl', label: 'Ctrl', value: 'CTRL', isModifier: true, order: 0),
       KeyboardKey(id: 'alt', label: 'Alt', value: 'ALT', isModifier: true, order: 1),
+      KeyboardKey(id: 'shift', label: 'Shift', value: 'SHIFT', isModifier: true, order: 2),
       // Common keys
-      KeyboardKey(id: 'tab', label: 'Tab', value: '\t', order: 2),
+      KeyboardKey(id: 'tab', label: 'Tab', value: '\t', order: 3),
       KeyboardKey(id: 'esc', label: 'Esc', value: '\x1B', order: 3),
       // Arrow keys
       KeyboardKey(id: 'up', label: 'Up', value: '\x1B[A', order: 4),

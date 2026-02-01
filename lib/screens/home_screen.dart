@@ -129,7 +129,6 @@ class _HomeScreenState extends State<HomeScreen> {
     final authService = AuthService();
     bool biometricEnabled = await storageService.isBiometricEnabled();
     bool biometricAvailable = await authService.isBiometricAvailable();
-    bool keepConnectionsAlive = await storageService.isKeepConnectionsAliveEnabled();
 
     if (!mounted) return;
 
@@ -137,52 +136,21 @@ class _HomeScreenState extends State<HomeScreen> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          backgroundColor: const Color(0xFF2D2D2D),
-          title: const Text(
-            'Configuracoes',
-            style: TextStyle(color: Colors.white),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              SwitchListTile(
-                title: const Text(
-                  'Autenticacao biometrica',
-                  style: TextStyle(color: Colors.white),
-                ),
-                subtitle: Text(
-                  biometricAvailable
-                      ? 'Exigir biometria ao abrir o app'
-                      : 'Nao disponivel neste dispositivo',
-                  style: TextStyle(color: Colors.grey.shade400, fontSize: 12),
-                ),
-                value: biometricEnabled,
-                activeColor: const Color(0xFF4EC9B0),
-                onChanged: biometricAvailable
-                    ? (value) async {
-                        await storageService.setBiometricEnabled(value);
-                        setDialogState(() => biometricEnabled = value);
-                      }
-                    : null,
-              ),
-              const Divider(color: Color(0xFF3D3D3D)),
-              SwitchListTile(
-                title: const Text(
-                  'Manter conexoes ativas',
-                  style: TextStyle(color: Colors.white),
-                ),
-                subtitle: Text(
-                  'Manter SSH ativo ao fechar o app',
-                  style: TextStyle(color: Colors.grey.shade400, fontSize: 12),
-                ),
-                value: keepConnectionsAlive,
-                activeColor: const Color(0xFF4EC9B0),
-                onChanged: (value) async {
-                  await storageService.setKeepConnectionsAliveEnabled(value);
-                  setDialogState(() => keepConnectionsAlive = value);
-                },
-              ),
-            ],
+          title: const Text('Configuracoes'),
+          content: SwitchListTile(
+            title: const Text('Autenticacao biometrica'),
+            subtitle: Text(
+              biometricAvailable
+                  ? 'Exigir biometria ao abrir o app'
+                  : 'Nao disponivel neste dispositivo',
+            ),
+            value: biometricEnabled,
+            onChanged: biometricAvailable
+                ? (value) async {
+                    await storageService.setBiometricEnabled(value);
+                    setDialogState(() => biometricEnabled = value);
+                  }
+                : null,
           ),
           actions: [
             TextButton(

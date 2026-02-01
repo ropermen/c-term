@@ -4,8 +4,6 @@ import 'package:xterm/xterm.dart';
 import 'package:dartssh2/dartssh2.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import '../models/ssh_connection.dart';
-import '../services/foreground_service.dart';
-import '../services/storage_service.dart';
 
 class TerminalSession {
   final String id;
@@ -31,7 +29,6 @@ class TerminalSession {
 
 class TerminalProvider extends ChangeNotifier {
   final Map<String, TerminalSession> _sessions = {};
-  final StorageService _storageService = StorageService();
   String? _activeSessionId;
 
   Map<String, TerminalSession> get sessions => Map.unmodifiable(_sessions);
@@ -42,18 +39,12 @@ class TerminalProvider extends ChangeNotifier {
 
   List<TerminalSession> get sessionList => _sessions.values.toList();
 
-  Future<void> _updateWakelock() async {
+  void _updateWakelock() {
     final connectedSessions = _sessions.values.where((s) => s.isConnected).length;
-    final keepAlive = await _storageService.isKeepConnectionsAliveEnabled();
-
     if (connectedSessions > 0) {
       WakelockPlus.enable();
-      if (keepAlive) {
-        ForegroundServiceManager.startService(connectedSessions);
-      }
     } else {
       WakelockPlus.disable();
-      ForegroundServiceManager.stopService();
     }
   }
 
@@ -192,7 +183,6 @@ class TerminalProvider extends ChangeNotifier {
   void dispose() {
     closeAllSessions();
     WakelockPlus.disable();
-    ForegroundServiceManager.stopService();
     super.dispose();
   }
 }

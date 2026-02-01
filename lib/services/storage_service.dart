@@ -7,7 +7,6 @@ class StorageService {
   static const String _connectionsKey = 'ssh_connections';
   static const String _keyboardKeysKey = 'keyboard_keys';
   static const String _biometricEnabledKey = 'biometric_enabled';
-  static const String _keepConnectionsAliveKey = 'keep_connections_alive';
 
   final FlutterSecureStorage _storage;
 
@@ -99,14 +98,5 @@ class StorageService {
 
   Future<void> setBiometricEnabled(bool enabled) async {
     await _storage.write(key: _biometricEnabledKey, value: enabled.toString());
-  }
-
-  Future<bool> isKeepConnectionsAliveEnabled() async {
-    final String? value = await _storage.read(key: _keepConnectionsAliveKey);
-    return value == 'true';
-  }
-
-  Future<void> setKeepConnectionsAliveEnabled(bool enabled) async {
-    await _storage.write(key: _keepConnectionsAliveKey, value: enabled.toString());
   }
 }

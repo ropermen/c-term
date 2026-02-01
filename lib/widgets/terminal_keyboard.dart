@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/keyboard_provider.dart';
 import '../models/keyboard_key.dart';
+import '../screens/keyboard_settings_screen.dart';
 
 class TerminalKeyboard extends StatefulWidget {
   final void Function(String) onKeyPressed;
@@ -18,6 +19,7 @@ class TerminalKeyboard extends StatefulWidget {
 class _TerminalKeyboardState extends State<TerminalKeyboard> {
   bool _ctrlPressed = false;
   bool _altPressed = false;
+  bool _shiftPressed = false;
 
   @override
   void initState() {
@@ -29,26 +31,29 @@ class _TerminalKeyboardState extends State<TerminalKeyboard> {
 
   void _handleKeyPress(KeyboardKey key) {
     if (key.isModifier) {
-      if (key.id == 'ctrl') {
-        setState(() {
+      setState(() {
+        if (key.id == 'ctrl') {
           _ctrlPressed = !_ctrlPressed;
-          if (_ctrlPressed) _altPressed = false;
-        });
-      } else if (key.id == 'alt') {
-        setState(() {
+        } else if (key.id == 'alt') {
           _altPressed = !_altPressed;
-          if (_altPressed) _ctrlPressed = false;
-        });
-      }
+        } else if (key.id == 'shift') {
+          _shiftPressed = !_shiftPressed;
+        }
+      });
       return;
     }
 
     String output = key.value;
 
+    // Apply Shift modifier (uppercase for letters)
+    if (_shiftPressed && key.value.length == 1) {
+      output = key.value.toUpperCase();
+    }
+
+    // Apply Ctrl modifier
     if (_ctrlPressed) {
-      // Convert to Ctrl sequence
-      if (key.value.length == 1) {
-        final char = key.value.toLowerCase();
+      if (output.length == 1) {
+        final char = output.toLowerCase();
         final ctrlMap = {
           'a': '\x01',
           'b': '\x02',
@@ -82,14 +87,21 @@ class _TerminalKeyboardState extends State<TerminalKeyboard> {
           '^': '\x1E',
           '_': '\x1F',
         };
-        output = ctrlMap[char] ?? key.value;
+        output = ctrlMap[char] ?? output;
       }
-      setState(() => _ctrlPressed = false);
-    } else if (_altPressed) {
-      // Alt sends ESC before the character
-      output = '\x1B${key.value}';
-      setState(() => _altPressed = false);
     }
+
+    // Apply Alt modifier (ESC prefix)
+    if (_altPressed) {
+      output = '\x1B$output';
+    }
+
+    // Reset modifiers after key press
+    setState(() {
+      _ctrlPressed = false;
+      _altPressed = false;
+      _shiftPressed = false;
+    });
 
     widget.onKeyPressed(output);
   }
@@ -183,6 +195,26 @@ class _TerminalKeyboardState extends State<TerminalKeyboard> {
       child: Row(
         children: [
           const SizedBox(width: 4),
+          // Keyboard settings button
+          Material(
+            color: const Color(0xFF3D3D3D),
+            borderRadius: BorderRadius.circular(4),
+            child: InkWell(
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const KeyboardSettingsScreen()),
+                );
+              },
+              borderRadius: BorderRadius.circular(4),
+              child: Container(
+                width: 32,
+                height: 28,
+                alignment: Alignment.center,
+                child: Icon(Icons.settings, size: 16, color: Colors.grey.shade400),
+              ),
+            ),
+          ),
+          const SizedBox(width: 2),
           // Text input button
           Material(
             color: const Color(0xFF3D3D3D),
@@ -199,8 +231,8 @@ class _TerminalKeyboardState extends State<TerminalKeyboard> {
             ),
           ),
           const SizedBox(width: 2),
-          // Modifier indicator
-          if (_ctrlPressed || _altPressed)
+          // Modifier indicators
+          if (_ctrlPressed || _altPressed || _shiftPressed)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               margin: const EdgeInsets.only(right: 4),
@@ -209,7 +241,11 @@ class _TerminalKeyboardState extends State<TerminalKeyboard> {
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
-                _ctrlPressed ? 'Ctrl' : 'Alt',
+                [
+                  if (_ctrlPressed) 'Ctrl',
+                  if (_altPressed) 'Alt',
+                  if (_shiftPressed) 'Shift',
+                ].join('+'),
                 style: const TextStyle(
                   color: Colors.black,
                   fontSize: 10,
@@ -245,7 +281,8 @@ class _TerminalKeyboardState extends State<TerminalKeyboard> {
 
   Widget _buildKey(KeyboardKey key) {
     final bool isActive = (key.id == 'ctrl' && _ctrlPressed) ||
-        (key.id == 'alt' && _altPressed);
+        (key.id == 'alt' && _altPressed) ||
+        (key.id == 'shift' && _shiftPressed);
 
     IconData? icon;
     if (key.id == 'up') icon = Icons.arrow_upward;
