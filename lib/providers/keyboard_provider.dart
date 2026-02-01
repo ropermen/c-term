@@ -73,6 +73,48 @@ class KeyboardProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> reorderKeysInRow(int row, int oldIndex, int newIndex) async {
+    final rowKeys = row == 1 ? enabledKeysRow1 : enabledKeysRow2;
+
+    if (oldIndex < newIndex) {
+      newIndex -= 1;
+    }
+
+    final movedKey = rowKeys.removeAt(oldIndex);
+    rowKeys.insert(newIndex, movedKey);
+
+    // Update order based on new positions within the row
+    for (int i = 0; i < rowKeys.length; i++) {
+      final keyIndex = _keys.indexWhere((k) => k.id == rowKeys[i].id);
+      if (keyIndex != -1) {
+        _keys[keyIndex] = _keys[keyIndex].copyWith(order: i);
+      }
+    }
+
+    await _saveKeys();
+    notifyListeners();
+  }
+
+  Future<void> moveKeyLeft(String keyId) async {
+    final key = _keys.firstWhere((k) => k.id == keyId);
+    final rowKeys = key.row == 1 ? enabledKeysRow1 : enabledKeysRow2;
+    final currentIndex = rowKeys.indexWhere((k) => k.id == keyId);
+
+    if (currentIndex > 0) {
+      await reorderKeysInRow(key.row, currentIndex, currentIndex - 1);
+    }
+  }
+
+  Future<void> moveKeyRight(String keyId) async {
+    final key = _keys.firstWhere((k) => k.id == keyId);
+    final rowKeys = key.row == 1 ? enabledKeysRow1 : enabledKeysRow2;
+    final currentIndex = rowKeys.indexWhere((k) => k.id == keyId);
+
+    if (currentIndex < rowKeys.length - 1) {
+      await reorderKeysInRow(key.row, currentIndex, currentIndex + 2);
+    }
+  }
+
   Future<void> resetToDefaults() async {
     await _storageService.resetKeyboardKeys();
     _keys = KeyboardKey.defaultKeys();

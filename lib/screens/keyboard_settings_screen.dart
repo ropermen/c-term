@@ -68,7 +68,7 @@ class _KeyboardSettingsScreenState extends State<KeyboardSettingsScreen> {
             padding: const EdgeInsets.all(16),
             children: [
               Text(
-                'Toque para ativar/desativar. Use os botoes 1/2 para mudar de linha.',
+                'Toque para ativar/desativar. Use setas para reordenar. Use 1/2 para mudar de linha.',
                 style: TextStyle(color: Colors.grey.shade400, fontSize: 14),
               ),
               const SizedBox(height: 16),
@@ -142,11 +142,13 @@ class _KeysRow extends StatelessWidget {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
-      children: keys.map((key) => _KeyChip(
-        keyData: key,
+      children: List.generate(keys.length, (index) => _KeyChip(
+        keyData: keys[index],
         provider: provider,
         currentRow: currentRow,
-      )).toList(),
+        isFirst: index == 0,
+        isLast: index == keys.length - 1,
+      )),
     );
   }
 }
@@ -155,11 +157,15 @@ class _KeyChip extends StatelessWidget {
   final KeyboardKey keyData;
   final KeyboardProvider provider;
   final int currentRow;
+  final bool isFirst;
+  final bool isLast;
 
   const _KeyChip({
     required this.keyData,
     required this.provider,
     required this.currentRow,
+    this.isFirst = false,
+    this.isLast = false,
   });
 
   @override
@@ -174,16 +180,28 @@ class _KeyChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
+          // Left arrow
           InkWell(
-            onTap: () => provider.toggleKey(keyData.id),
+            onTap: isFirst ? null : () => provider.moveKeyLeft(keyData.id),
             borderRadius: const BorderRadius.horizontal(left: Radius.circular(8)),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+              child: Icon(
+                Icons.chevron_left,
+                size: 16,
+                color: isFirst ? Colors.grey.shade700 : Colors.grey.shade400,
+              ),
+            ),
+          ),
+          // Key label
+          InkWell(
+            onTap: () => provider.toggleKey(keyData.id),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
               decoration: BoxDecoration(
                 color: keyData.isModifier
                     ? const Color(0xFF4EC9B0).withOpacity(0.2)
                     : const Color(0xFF3D3D3D),
-                borderRadius: const BorderRadius.horizontal(left: Radius.circular(8)),
               ),
               child: Text(
                 keyData.label,
@@ -195,11 +213,24 @@ class _KeyChip extends StatelessWidget {
               ),
             ),
           ),
+          // Right arrow
+          InkWell(
+            onTap: isLast ? null : () => provider.moveKeyRight(keyData.id),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+              child: Icon(
+                Icons.chevron_right,
+                size: 16,
+                color: isLast ? Colors.grey.shade700 : Colors.grey.shade400,
+              ),
+            ),
+          ),
+          // Row toggle
           InkWell(
             onTap: () => provider.setKeyRow(keyData.id, targetRow),
             borderRadius: const BorderRadius.horizontal(right: Radius.circular(8)),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
               child: Text(
                 '$targetRow',
                 style: TextStyle(
