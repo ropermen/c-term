@@ -94,6 +94,7 @@ class TerminalProvider extends ChangeNotifier {
 
       final shell = await client.shell(
         pty: SSHPtyConfig(
+          type: 'xterm-256color',
           width: terminal.viewWidth,
           height: terminal.viewHeight,
         ),

@@ -7,10 +7,12 @@ import '../screens/keyboard_settings_screen.dart';
 
 class TerminalKeyboard extends StatefulWidget {
   final void Function(String) onKeyPressed;
+  final FocusNode? terminalFocusNode;
 
   const TerminalKeyboard({
     super.key,
     required this.onKeyPressed,
+    this.terminalFocusNode,
   });
 
   @override
@@ -22,9 +24,6 @@ class _TerminalKeyboardState extends State<TerminalKeyboard> {
   bool _altPressed = false;
   bool _shiftPressed = false;
   bool _keyboardLocked = false;
-  final FocusNode _focusNode = FocusNode();
-  final TextEditingController _textController = TextEditingController();
-  String _lastText = '';
 
   @override
   void initState() {
@@ -34,34 +33,15 @@ class _TerminalKeyboardState extends State<TerminalKeyboard> {
     });
   }
 
-  @override
-  void dispose() {
-    _focusNode.dispose();
-    _textController.dispose();
-    super.dispose();
-  }
-
-  void _onTextChanged(String text) {
-    if (text.length > _lastText.length) {
-      // New character(s) added
-      final newChars = text.substring(_lastText.length);
-      widget.onKeyPressed(newChars);
-    } else if (text.length < _lastText.length) {
-      // Backspace pressed
-      widget.onKeyPressed('\x7F'); // DEL character
-    }
-    _lastText = text;
-  }
-
   void _toggleKeyboard() {
     setState(() {
       _keyboardLocked = !_keyboardLocked;
     });
     if (_keyboardLocked) {
-      _focusNode.requestFocus();
+      widget.terminalFocusNode?.requestFocus();
       SystemChannels.textInput.invokeMethod('TextInput.show');
     } else {
-      _focusNode.unfocus();
+      widget.terminalFocusNode?.unfocus();
       SystemChannels.textInput.invokeMethod('TextInput.hide');
     }
   }
@@ -272,27 +252,6 @@ class _TerminalKeyboardState extends State<TerminalKeyboard> {
             ),
           ),
           const SizedBox(width: 2),
-          // Hidden text field to capture keyboard input
-          SizedBox(
-            width: 1,
-            height: 1,
-            child: Opacity(
-              opacity: 0,
-              child: TextField(
-                focusNode: _focusNode,
-                controller: _textController,
-                autofocus: false,
-                showCursor: false,
-                enableSuggestions: false,
-                autocorrect: false,
-                decoration: const InputDecoration(
-                  border: InputBorder.none,
-                  contentPadding: EdgeInsets.zero,
-                ),
-                onChanged: _onTextChanged,
-              ),
-            ),
-          ),
           // Text input button
           Material(
             color: const Color(0xFF3C3C3E),

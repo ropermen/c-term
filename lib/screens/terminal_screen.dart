@@ -150,8 +150,13 @@ class _TerminalScreenState extends State<TerminalScreen> {
             backgroundColor: const Color(0xFF2C2C2E),
             title: Row(
               children: [
-                const Text('Terminal', style: TextStyle(color: Colors.white)),
-                const Spacer(),
+                Expanded(
+                  child: Text(
+                    activeSession?.connection.host ?? 'Terminal',
+                    style: const TextStyle(color: Colors.white, fontSize: 14),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
                 if (activeSession != null) ...[
                   Text(
                     activeSession.isConnected
@@ -161,13 +166,13 @@ class _TerminalScreenState extends State<TerminalScreen> {
                             : 'Desconectado',
                     style: TextStyle(
                       color: Colors.grey.shade400,
-                      fontSize: 12,
+                      fontSize: 11,
                     ),
                   ),
                   const SizedBox(width: 6),
                   Container(
-                    width: 10,
-                    height: 10,
+                    width: 8,
+                    height: 8,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: activeSession.isConnected
@@ -328,10 +333,12 @@ class _TerminalView extends StatefulWidget {
 
 class _TerminalViewState extends State<_TerminalView> {
   final _terminalController = TerminalController();
+  final _terminalFocusNode = FocusNode();
 
   @override
   void dispose() {
     _terminalController.dispose();
+    _terminalFocusNode.dispose();
     super.dispose();
   }
 
@@ -390,6 +397,7 @@ class _TerminalViewState extends State<_TerminalView> {
           child: TerminalView(
             widget.session.terminal,
             controller: _terminalController,
+            focusNode: _terminalFocusNode,
             theme: _terminalTheme,
             padding: const EdgeInsets.all(8),
             autofocus: true,
@@ -402,6 +410,7 @@ class _TerminalViewState extends State<_TerminalView> {
         ),
         TerminalKeyboard(
           onKeyPressed: _sendToTerminal,
+          terminalFocusNode: _terminalFocusNode,
         ),
       ],
     );
