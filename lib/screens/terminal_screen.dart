@@ -253,7 +253,9 @@ class _TerminalViewState extends State<_TerminalView> {
         if (_showKeyboard)
           TerminalKeyboard(
             onKeyPressed: _sendToTerminal,
-          ),
+          )
+        else
+          SizedBox(height: MediaQuery.of(context).padding.bottom),
       ],
     );
   }
