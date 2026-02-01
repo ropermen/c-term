@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/keyboard_provider.dart';
 import '../models/keyboard_key.dart';
-import '../screens/keyboard_settings_screen.dart';
 
 class TerminalKeyboard extends StatefulWidget {
   final void Function(String) onKeyPressed;
@@ -184,26 +183,6 @@ class _TerminalKeyboardState extends State<TerminalKeyboard> {
       child: Row(
         children: [
           const SizedBox(width: 4),
-          // Settings button
-          Material(
-            color: const Color(0xFF3D3D3D),
-            borderRadius: BorderRadius.circular(4),
-            child: InkWell(
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const KeyboardSettingsScreen()),
-                );
-              },
-              borderRadius: BorderRadius.circular(4),
-              child: Container(
-                width: 32,
-                height: 28,
-                alignment: Alignment.center,
-                child: Icon(Icons.settings, size: 16, color: Colors.grey.shade400),
-              ),
-            ),
-          ),
-          const SizedBox(width: 2),
           // Text input button
           Material(
             color: const Color(0xFF3D3D3D),

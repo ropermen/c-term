@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:xterm/xterm.dart';
 import '../providers/terminal_provider.dart';
 import '../widgets/terminal_keyboard.dart';
+import 'keyboard_settings_screen.dart';
 
 class TerminalScreen extends StatelessWidget {
   const TerminalScreen({super.key});
@@ -95,6 +96,15 @@ class TerminalScreen extends StatelessWidget {
                         ),
                       ],
                     ),
+                  );
+                },
+              ),
+              IconButton(
+                icon: const Icon(Icons.keyboard, color: Colors.white),
+                tooltip: 'Configurar teclado',
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const KeyboardSettingsScreen()),
                   );
                 },
               ),
