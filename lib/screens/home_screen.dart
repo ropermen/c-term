@@ -14,12 +14,31 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ConnectionsProvider>().loadConnections();
     });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  List<SSHConnection> _filterConnections(List<SSHConnection> connections) {
+    if (_searchQuery.isEmpty) return connections;
+    final query = _searchQuery.toLowerCase();
+    return connections.where((c) {
+      return c.name.toLowerCase().contains(query) ||
+          c.host.toLowerCase().contains(query) ||
+          c.username.toLowerCase().contains(query);
+    }).toList();
   }
 
   Future<void> _connectToServer(SSHConnection connection) async {
@@ -77,8 +96,8 @@ class _HomeScreenState extends State<HomeScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Confirmar exclusão'),
-        content: Text('Deseja excluir a conexão "${connection.name}"?'),
+        title: const Text('Confirmar exclusao'),
+        content: Text('Deseja excluir a conexao "${connection.name}"?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
@@ -96,6 +115,11 @@ class _HomeScreenState extends State<HomeScreen> {
     if (confirmed == true && mounted) {
       await context.read<ConnectionsProvider>().deleteConnection(connection.id);
     }
+  }
+
+  void _onReorder(int oldIndex, int newIndex) {
+    final provider = context.read<ConnectionsProvider>();
+    provider.reorderConnections(oldIndex, newIndex);
   }
 
   @override
@@ -152,7 +176,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Nenhuma conexão cadastrada',
+                    'Nenhuma conexao cadastrada',
                     style: TextStyle(
                       color: Colors.grey.shade400,
                       fontSize: 18,
@@ -160,7 +184,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Toque no + para adicionar uma conexão SSH',
+                    'Toque no + para adicionar uma conexao SSH',
                     style: TextStyle(
                       color: Colors.grey.shade600,
                       fontSize: 14,
@@ -171,18 +195,118 @@ class _HomeScreenState extends State<HomeScreen> {
             );
           }
 
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: provider.connections.length,
-            itemBuilder: (context, index) {
-              final connection = provider.connections[index];
-              return _ConnectionCard(
-                connection: connection,
-                onTap: () => _connectToServer(connection),
-                onEdit: () => _editConnection(connection),
-                onDelete: () => _deleteConnection(connection),
-              );
-            },
+          final filteredConnections = _filterConnections(provider.connections);
+
+          return Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: TextField(
+                  controller: _searchController,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    hintText: 'Filtrar conexoes...',
+                    hintStyle: TextStyle(color: Colors.grey.shade500),
+                    prefixIcon: Icon(Icons.search, color: Colors.grey.shade400),
+                    suffixIcon: _searchQuery.isNotEmpty
+                        ? IconButton(
+                            icon: Icon(Icons.clear, color: Colors.grey.shade400),
+                            onPressed: () {
+                              _searchController.clear();
+                              setState(() => _searchQuery = '');
+                            },
+                          )
+                        : null,
+                    filled: true,
+                    fillColor: const Color(0xFF2D2D2D),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                  ),
+                  onChanged: (value) {
+                    setState(() => _searchQuery = value);
+                  },
+                ),
+              ),
+              if (_searchQuery.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    children: [
+                      Icon(Icons.drag_handle, size: 16, color: Colors.grey.shade600),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Arraste para reordenar',
+                        style: TextStyle(
+                          color: Colors.grey.shade600,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              const SizedBox(height: 8),
+              Expanded(
+                child: filteredConnections.isEmpty
+                    ? Center(
+                        child: Text(
+                          'Nenhuma conexao encontrada',
+                          style: TextStyle(color: Colors.grey.shade400),
+                        ),
+                      )
+                    : _searchQuery.isNotEmpty
+                        ? ListView.builder(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            itemCount: filteredConnections.length,
+                            itemBuilder: (context, index) {
+                              final connection = filteredConnections[index];
+                              return _ConnectionCard(
+                                key: ValueKey(connection.id),
+                                connection: connection,
+                                onTap: () => _connectToServer(connection),
+                                onEdit: () => _editConnection(connection),
+                                onDelete: () => _deleteConnection(connection),
+                                showDragHandle: false,
+                              );
+                            },
+                          )
+                        : ReorderableListView.builder(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            itemCount: provider.connections.length,
+                            onReorder: _onReorder,
+                            proxyDecorator: (child, index, animation) {
+                              return AnimatedBuilder(
+                                animation: animation,
+                                builder: (context, child) {
+                                  return Material(
+                                    elevation: 4,
+                                    color: Colors.transparent,
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: child,
+                                  );
+                                },
+                                child: child,
+                              );
+                            },
+                            itemBuilder: (context, index) {
+                              final connection = provider.connections[index];
+                              return _ConnectionCard(
+                                key: ValueKey(connection.id),
+                                connection: connection,
+                                onTap: () => _connectToServer(connection),
+                                onEdit: () => _editConnection(connection),
+                                onDelete: () => _deleteConnection(connection),
+                                showDragHandle: true,
+                              );
+                            },
+                          ),
+              ),
+            ],
           );
         },
       ),
@@ -204,12 +328,15 @@ class _ConnectionCard extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
+  final bool showDragHandle;
 
   const _ConnectionCard({
+    super.key,
     required this.connection,
     required this.onTap,
     required this.onEdit,
     required this.onDelete,
+    this.showDragHandle = false,
   });
 
   @override
@@ -228,6 +355,17 @@ class _ConnectionCard extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               child: Row(
                 children: [
+                  if (showDragHandle)
+                    ReorderableDragStartListener(
+                      index: 0,
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 12),
+                        child: Icon(
+                          Icons.drag_handle,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ),
                   Container(
                     width: 48,
                     height: 48,

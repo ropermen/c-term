@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:xterm/xterm.dart';
 import 'package:dartssh2/dartssh2.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 import '../models/ssh_connection.dart';
 
 class TerminalSession {
@@ -37,6 +38,15 @@ class TerminalProvider extends ChangeNotifier {
       _activeSessionId != null ? _sessions[_activeSessionId] : null;
 
   List<TerminalSession> get sessionList => _sessions.values.toList();
+
+  void _updateWakelock() {
+    final hasActiveSessions = _sessions.values.any((s) => s.isConnected);
+    if (hasActiveSessions) {
+      WakelockPlus.enable();
+    } else {
+      WakelockPlus.disable();
+    }
+  }
 
   Future<TerminalSession> createSession(SSHConnection connection) async {
     final terminal = Terminal(
@@ -79,7 +89,7 @@ class TerminalProvider extends ChangeNotifier {
           onPasswordRequest: () => connection.password!,
         );
       } else {
-        throw Exception('Nenhum método de autenticação fornecido');
+        throw Exception('Nenhum metodo de autenticacao fornecido');
       }
 
       final shell = await client.shell(
@@ -94,6 +104,8 @@ class TerminalProvider extends ChangeNotifier {
       session.isConnected = true;
       session.isConnecting = false;
 
+      _updateWakelock();
+
       shell.stdout.listen((data) {
         terminal.write(String.fromCharCodes(data));
       });
@@ -104,7 +116,8 @@ class TerminalProvider extends ChangeNotifier {
 
       shell.done.then((_) {
         session.isConnected = false;
-        terminal.write('\r\n[Conexão encerrada]\r\n');
+        terminal.write('\r\n[Conexao encerrada]\r\n');
+        _updateWakelock();
         notifyListeners();
       });
 
@@ -122,6 +135,7 @@ class TerminalProvider extends ChangeNotifier {
       session.isConnecting = false;
       session.error = e.toString();
       terminal.write('\r\n[Erro: ${e.toString()}]\r\n');
+      _updateWakelock();
       notifyListeners();
       return session;
     }
@@ -145,6 +159,7 @@ class TerminalProvider extends ChangeNotifier {
         _activeSessionId = _sessions.isNotEmpty ? _sessions.keys.first : null;
       }
 
+      _updateWakelock();
       notifyListeners();
     }
   }
@@ -156,6 +171,7 @@ class TerminalProvider extends ChangeNotifier {
     }
     _sessions.clear();
     _activeSessionId = null;
+    _updateWakelock();
     notifyListeners();
   }
 
@@ -166,6 +182,7 @@ class TerminalProvider extends ChangeNotifier {
   @override
   void dispose() {
     closeAllSessions();
+    WakelockPlus.disable();
     super.dispose();
   }
 }

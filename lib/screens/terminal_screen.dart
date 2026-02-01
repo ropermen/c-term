@@ -1,7 +1,9 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:xterm/xterm.dart';
 import '../providers/terminal_provider.dart';
+import '../widgets/terminal_keyboard.dart';
 
 class TerminalScreen extends StatelessWidget {
   const TerminalScreen({super.key});
@@ -20,7 +22,7 @@ class TerminalScreen extends StatelessWidget {
             ),
             body: const Center(
               child: Text(
-                'Nenhuma sessão ativa',
+                'Nenhuma sessao ativa',
                 style: TextStyle(color: Colors.grey),
               ),
             ),
@@ -36,14 +38,14 @@ class TerminalScreen extends StatelessWidget {
             actions: [
               IconButton(
                 icon: const Icon(Icons.clear_all, color: Colors.white),
-                tooltip: 'Fechar todas as sessões',
+                tooltip: 'Fechar todas as sessoes',
                 onPressed: () {
                   showDialog(
                     context: context,
                     builder: (ctx) => AlertDialog(
-                      title: const Text('Fechar todas as sessões?'),
+                      title: const Text('Fechar todas as sessoes?'),
                       content: const Text(
-                        'Todas as conexões SSH serão encerradas.',
+                        'Todas as conexoes SSH serao encerradas.',
                       ),
                       actions: [
                         TextButton(
@@ -76,7 +78,7 @@ class TerminalScreen extends StatelessWidget {
               ? _TerminalView(session: provider.activeSession!)
               : const Center(
                   child: Text(
-                    'Selecione uma sessão',
+                    'Selecione uma sessao',
                     style: TextStyle(color: Colors.grey),
                   ),
                 ),
@@ -174,11 +176,18 @@ class _TerminalView extends StatefulWidget {
 
 class _TerminalViewState extends State<_TerminalView> {
   final _terminalController = TerminalController();
+  bool _showKeyboard = true;
 
   @override
   void dispose() {
     _terminalController.dispose();
     super.dispose();
+  }
+
+  void _sendToTerminal(String data) {
+    if (widget.session.shell != null && widget.session.isConnected) {
+      widget.session.shell!.write(Uint8List.fromList(data.codeUnits));
+    }
   }
 
   @override
@@ -241,13 +250,17 @@ class _TerminalViewState extends State<_TerminalView> {
           ),
         ),
         _buildStatusBar(),
+        if (_showKeyboard)
+          TerminalKeyboard(
+            onKeyPressed: _sendToTerminal,
+          ),
       ],
     );
   }
 
   Widget _buildStatusBar() {
     return Container(
-      height: 24,
+      height: 32,
       padding: const EdgeInsets.symmetric(horizontal: 12),
       color: const Color(0xFF007ACC),
       child: Row(
@@ -277,6 +290,15 @@ class _TerminalViewState extends State<_TerminalView> {
             style: const TextStyle(
               color: Colors.white,
               fontSize: 12,
+            ),
+          ),
+          const SizedBox(width: 12),
+          InkWell(
+            onTap: () => setState(() => _showKeyboard = !_showKeyboard),
+            child: Icon(
+              _showKeyboard ? Icons.keyboard_hide : Icons.keyboard,
+              color: Colors.white,
+              size: 18,
             ),
           ),
         ],

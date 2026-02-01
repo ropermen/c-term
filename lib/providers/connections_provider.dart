@@ -101,4 +101,20 @@ class ConnectionsProvider extends ChangeNotifier {
     _error = null;
     notifyListeners();
   }
+
+  Future<void> reorderConnections(int oldIndex, int newIndex) async {
+    if (oldIndex < newIndex) {
+      newIndex -= 1;
+    }
+    final connection = _connections.removeAt(oldIndex);
+    _connections.insert(newIndex, connection);
+    notifyListeners();
+
+    try {
+      await _storageService.saveConnections(_connections);
+    } catch (e) {
+      _error = 'Erro ao salvar ordem: $e';
+      notifyListeners();
+    }
+  }
 }
