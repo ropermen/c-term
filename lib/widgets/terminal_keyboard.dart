@@ -109,12 +109,8 @@ class _TerminalKeyboardState extends State<TerminalKeyboard> {
   Widget _buildKeyboard() {
     return Consumer<KeyboardProvider>(
       builder: (context, provider, _) {
-        final enabledKeys = provider.enabledKeys;
-
-        // Split keys into two rows
-        final midpoint = (enabledKeys.length / 2).ceil();
-        final firstRowKeys = enabledKeys.take(midpoint).toList();
-        final secondRowKeys = enabledKeys.skip(midpoint).toList();
+        final firstRowKeys = provider.enabledKeysRow1;
+        final secondRowKeys = provider.enabledKeysRow2;
 
         return Column(
           mainAxisSize: MainAxisSize.min,

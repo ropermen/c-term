@@ -64,85 +64,154 @@ class _KeyboardSettingsScreenState extends State<KeyboardSettingsScreen> {
             );
           }
 
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          return ListView(
+            padding: const EdgeInsets.all(16),
             children: [
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Text(
-                  'Arraste para reordenar. Toque para ativar/desativar.',
-                  style: TextStyle(color: Colors.grey.shade400, fontSize: 14),
-                ),
+              Text(
+                'Toque para ativar/desativar. Use os botoes 1/2 para mudar de linha.',
+                style: TextStyle(color: Colors.grey.shade400, fontSize: 14),
               ),
-              const Divider(color: Color(0xFF3D3D3D), height: 1),
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Text(
-                  'Teclas Ativas',
-                  style: TextStyle(
-                    color: Colors.grey.shade300,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
+              const SizedBox(height: 16),
+              _buildSectionHeader('Linha 1 (Superior)'),
+              const SizedBox(height: 8),
+              _KeysRow(
+                keys: provider.enabledKeysRow1,
+                provider: provider,
+                currentRow: 1,
               ),
-              Expanded(
-                child: _EnabledKeysList(provider: provider),
+              const SizedBox(height: 16),
+              _buildSectionHeader('Linha 2 (Inferior)'),
+              const SizedBox(height: 8),
+              _KeysRow(
+                keys: provider.enabledKeysRow2,
+                provider: provider,
+                currentRow: 2,
               ),
-              const Divider(color: Color(0xFF3D3D3D), height: 1),
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Text(
-                  'Teclas Disponiveis',
-                  style: TextStyle(
-                    color: Colors.grey.shade300,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-              Expanded(
-                child: _DisabledKeysList(provider: provider),
-              ),
+              const SizedBox(height: 16),
+              const Divider(color: Color(0xFF3D3D3D)),
+              const SizedBox(height: 8),
+              _buildSectionHeader('Teclas Disponiveis'),
+              const SizedBox(height: 8),
+              _DisabledKeysList(provider: provider),
             ],
           );
         },
       ),
     );
   }
+
+  Widget _buildSectionHeader(String title) {
+    return Text(
+      title,
+      style: TextStyle(
+        color: Colors.grey.shade300,
+        fontSize: 16,
+        fontWeight: FontWeight.w500,
+      ),
+    );
+  }
 }
 
-class _EnabledKeysList extends StatelessWidget {
+class _KeysRow extends StatelessWidget {
+  final List<KeyboardKey> keys;
   final KeyboardProvider provider;
+  final int currentRow;
 
-  const _EnabledKeysList({required this.provider});
+  const _KeysRow({
+    required this.keys,
+    required this.provider,
+    required this.currentRow,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final enabledKeys = provider.enabledKeys;
-
-    if (enabledKeys.isEmpty) {
-      return Center(
+    if (keys.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFF2D2D2D),
+          borderRadius: BorderRadius.circular(8),
+        ),
         child: Text(
-          'Nenhuma tecla ativa',
+          'Nenhuma tecla nesta linha',
           style: TextStyle(color: Colors.grey.shade500),
         ),
       );
     }
 
-    return ReorderableListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      itemCount: enabledKeys.length,
-      onReorder: provider.reorderKeys,
-      itemBuilder: (context, index) {
-        final key = enabledKeys[index];
-        return _KeyTile(
-          key: ValueKey(key.id),
-          keyData: key,
-          onToggle: () => provider.toggleKey(key.id),
-          showDragHandle: true,
-        );
-      },
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: keys.map((key) => _KeyChip(
+        keyData: key,
+        provider: provider,
+        currentRow: currentRow,
+      )).toList(),
+    );
+  }
+}
+
+class _KeyChip extends StatelessWidget {
+  final KeyboardKey keyData;
+  final KeyboardProvider provider;
+  final int currentRow;
+
+  const _KeyChip({
+    required this.keyData,
+    required this.provider,
+    required this.currentRow,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final targetRow = currentRow == 1 ? 2 : 1;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF2D2D2D),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          InkWell(
+            onTap: () => provider.toggleKey(keyData.id),
+            borderRadius: const BorderRadius.horizontal(left: Radius.circular(8)),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: keyData.isModifier
+                    ? const Color(0xFF4EC9B0).withOpacity(0.2)
+                    : const Color(0xFF3D3D3D),
+                borderRadius: const BorderRadius.horizontal(left: Radius.circular(8)),
+              ),
+              child: Text(
+                keyData.label,
+                style: TextStyle(
+                  color: keyData.isModifier ? const Color(0xFF4EC9B0) : Colors.white,
+                  fontFamily: 'monospace',
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ),
+          InkWell(
+            onTap: () => provider.setKeyRow(keyData.id, targetRow),
+            borderRadius: const BorderRadius.horizontal(right: Radius.circular(8)),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+              child: Text(
+                '$targetRow',
+                style: TextStyle(
+                  color: Colors.grey.shade400,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -157,7 +226,12 @@ class _DisabledKeysList extends StatelessWidget {
     final disabledKeys = provider.keys.where((k) => !k.enabled).toList();
 
     if (disabledKeys.isEmpty) {
-      return Center(
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFF2D2D2D),
+          borderRadius: BorderRadius.circular(8),
+        ),
         child: Text(
           'Todas as teclas estao ativas',
           style: TextStyle(color: Colors.grey.shade500),
@@ -165,136 +239,29 @@ class _DisabledKeysList extends StatelessWidget {
       );
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      itemCount: disabledKeys.length,
-      itemBuilder: (context, index) {
-        final key = disabledKeys[index];
-        return _KeyTile(
-          key: ValueKey(key.id),
-          keyData: key,
-          onToggle: () => provider.toggleKey(key.id),
-          showDragHandle: false,
-        );
-      },
-    );
-  }
-}
-
-class _KeyTile extends StatelessWidget {
-  final KeyboardKey keyData;
-  final VoidCallback onToggle;
-  final bool showDragHandle;
-
-  const _KeyTile({
-    super.key,
-    required this.keyData,
-    required this.onToggle,
-    this.showDragHandle = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      color: const Color(0xFF2D2D2D),
-      margin: const EdgeInsets.only(bottom: 8),
-      child: InkWell(
-        onTap: onToggle,
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: disabledKeys.map((key) => InkWell(
+        onTap: () => provider.toggleKey(key.id),
         borderRadius: BorderRadius.circular(8),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: Row(
-            children: [
-              if (showDragHandle)
-                ReorderableDragStartListener(
-                  index: 0,
-                  child: Padding(
-                    padding: const EdgeInsets.only(right: 12),
-                    child: Icon(
-                      Icons.drag_handle,
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
-                ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: keyData.isModifier
-                      ? const Color(0xFF4EC9B0).withOpacity(0.2)
-                      : const Color(0xFF3D3D3D),
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(
-                    color: keyData.isModifier
-                        ? const Color(0xFF4EC9B0)
-                        : const Color(0xFF4D4D4D),
-                  ),
-                ),
-                child: Text(
-                  keyData.label,
-                  style: TextStyle(
-                    color: keyData.isModifier
-                        ? const Color(0xFF4EC9B0)
-                        : Colors.white,
-                    fontFamily: 'monospace',
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  keyData.isModifier ? 'Modificador' : _getKeyDescription(keyData.id),
-                  style: TextStyle(
-                    color: Colors.grey.shade400,
-                    fontSize: 13,
-                  ),
-                ),
-              ),
-              Icon(
-                keyData.enabled ? Icons.check_circle : Icons.radio_button_unchecked,
-                color: keyData.enabled ? const Color(0xFF4EC9B0) : Colors.grey.shade600,
-              ),
-            ],
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: const Color(0xFF3D3D3D),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: const Color(0xFF4D4D4D)),
+          ),
+          child: Text(
+            key.label,
+            style: const TextStyle(
+              color: Colors.grey,
+              fontFamily: 'monospace',
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ),
-      ),
+      )).toList(),
     );
-  }
-
-  String _getKeyDescription(String id) {
-    switch (id) {
-      case 'tab':
-        return 'Tabulacao';
-      case 'esc':
-        return 'Escape';
-      case 'up':
-        return 'Seta para cima';
-      case 'down':
-        return 'Seta para baixo';
-      case 'left':
-        return 'Seta para esquerda';
-      case 'right':
-        return 'Seta para direita';
-      case 'del':
-        return 'Delete';
-      case 'pipe':
-        return 'Pipe (redirecionamento)';
-      case 'amp':
-        return 'E comercial';
-      case 'semicolon':
-        return 'Ponto e virgula';
-      case 'gt':
-        return 'Maior que';
-      case 'lt':
-        return 'Menor que';
-      case 'tilde':
-        return 'Til (home)';
-      case 'slash':
-        return 'Barra';
-      case 'backslash':
-        return 'Barra invertida';
-      default:
-        return 'Caractere especial';
-    }
   }
 }

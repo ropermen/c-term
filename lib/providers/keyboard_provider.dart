@@ -13,6 +13,10 @@ class KeyboardProvider extends ChangeNotifier {
   List<KeyboardKey> get keys => List.unmodifiable(_keys);
   List<KeyboardKey> get enabledKeys =>
       _keys.where((k) => k.enabled).toList()..sort((a, b) => a.order.compareTo(b.order));
+  List<KeyboardKey> get enabledKeysRow1 =>
+      _keys.where((k) => k.enabled && k.row == 1).toList()..sort((a, b) => a.order.compareTo(b.order));
+  List<KeyboardKey> get enabledKeysRow2 =>
+      _keys.where((k) => k.enabled && k.row == 2).toList()..sort((a, b) => a.order.compareTo(b.order));
   bool get isLoading => _isLoading;
 
   Future<void> loadKeys() async {
@@ -58,6 +62,15 @@ class KeyboardProvider extends ChangeNotifier {
 
     await _saveKeys();
     notifyListeners();
+  }
+
+  Future<void> setKeyRow(String keyId, int row) async {
+    final index = _keys.indexWhere((k) => k.id == keyId);
+    if (index != -1) {
+      _keys[index] = _keys[index].copyWith(row: row);
+      await _saveKeys();
+      notifyListeners();
+    }
   }
 
   Future<void> resetToDefaults() async {

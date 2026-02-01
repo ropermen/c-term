@@ -7,6 +7,7 @@ class KeyboardKey {
   final bool isModifier;
   bool enabled;
   int order;
+  int row;
 
   KeyboardKey({
     required this.id,
@@ -15,6 +16,7 @@ class KeyboardKey {
     this.isModifier = false,
     this.enabled = true,
     this.order = 0,
+    this.row = 1,
   });
 
   KeyboardKey copyWith({
@@ -24,6 +26,7 @@ class KeyboardKey {
     bool? isModifier,
     bool? enabled,
     int? order,
+    int? row,
   }) {
     return KeyboardKey(
       id: id ?? this.id,
@@ -32,6 +35,7 @@ class KeyboardKey {
       isModifier: isModifier ?? this.isModifier,
       enabled: enabled ?? this.enabled,
       order: order ?? this.order,
+      row: row ?? this.row,
     );
   }
 
@@ -43,6 +47,7 @@ class KeyboardKey {
       'isModifier': isModifier,
       'enabled': enabled,
       'order': order,
+      'row': row,
     };
   }
 
@@ -54,6 +59,7 @@ class KeyboardKey {
       isModifier: json['isModifier'] as bool? ?? false,
       enabled: json['enabled'] as bool? ?? true,
       order: json['order'] as int? ?? 0,
+      row: json['row'] as int? ?? 1,
     );
   }
 
