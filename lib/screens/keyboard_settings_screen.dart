@@ -275,6 +275,8 @@ class _KeyTile extends StatelessWidget {
         return 'Seta para esquerda';
       case 'right':
         return 'Seta para direita';
+      case 'del':
+        return 'Delete';
       case 'pipe':
         return 'Pipe (redirecionamento)';
       case 'amp':

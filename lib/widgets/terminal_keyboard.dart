@@ -166,11 +166,15 @@ class _TerminalKeyboardState extends State<TerminalKeyboard> {
           );
         }
 
-        return SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.all(8),
-          child: Row(
-            children: enabledKeys.map((key) => _buildKey(key)).toList(),
+        return Container(
+          constraints: const BoxConstraints(maxHeight: 88),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(8),
+            child: Wrap(
+              spacing: 4,
+              runSpacing: 4,
+              children: enabledKeys.map((key) => _buildKey(key)).toList(),
+            ),
           ),
         );
       },
