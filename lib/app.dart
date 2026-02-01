@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'providers/connections_provider.dart';
 import 'providers/terminal_provider.dart';
+import 'providers/keyboard_provider.dart';
 import 'screens/auth_screen.dart';
 
 class CTermApp extends StatelessWidget {
@@ -13,6 +14,7 @@ class CTermApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => ConnectionsProvider()),
         ChangeNotifierProvider(create: (_) => TerminalProvider()),
+        ChangeNotifierProvider(create: (_) => KeyboardProvider()),
       ],
       child: MaterialApp(
         title: 'c-term',

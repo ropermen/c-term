@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../models/ssh_connection.dart';
+import '../models/keyboard_key.dart';
 
 class StorageService {
   static const String _connectionsKey = 'ssh_connections';
+  static const String _keyboardKeysKey = 'keyboard_keys';
 
   final FlutterSecureStorage _storage;
 
@@ -65,5 +67,26 @@ class StorageService {
 
   Future<void> clearAll() async {
     await _storage.deleteAll();
+  }
+
+  Future<List<KeyboardKey>> getKeyboardKeys() async {
+    final String? data = await _storage.read(key: _keyboardKeysKey);
+    if (data == null || data.isEmpty) {
+      return KeyboardKey.defaultKeys();
+    }
+    try {
+      return KeyboardKey.keysFromJson(data);
+    } catch (e) {
+      return KeyboardKey.defaultKeys();
+    }
+  }
+
+  Future<void> saveKeyboardKeys(List<KeyboardKey> keys) async {
+    final String data = KeyboardKey.keysToJson(keys);
+    await _storage.write(key: _keyboardKeysKey, value: data);
+  }
+
+  Future<void> resetKeyboardKeys() async {
+    await _storage.delete(key: _keyboardKeysKey);
   }
 }
