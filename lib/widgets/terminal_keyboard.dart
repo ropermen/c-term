@@ -6,12 +6,10 @@ import '../screens/keyboard_settings_screen.dart';
 
 class TerminalKeyboard extends StatefulWidget {
   final void Function(String) onKeyPressed;
-  final VoidCallback onToggleKeyboard;
 
   const TerminalKeyboard({
     super.key,
     required this.onKeyPressed,
-    required this.onToggleKeyboard,
   });
 
   @override
@@ -138,22 +136,24 @@ class _TerminalKeyboardState extends State<TerminalKeyboard> {
       child: Row(
         children: [
           const SizedBox(width: 4),
-          // Minimize keyboard button
-          _buildControlButton(
-            icon: Icons.keyboard_hide,
-            onTap: widget.onToggleKeyboard,
-            tooltip: 'Minimizar teclado',
-          ),
-          const SizedBox(width: 2),
           // Settings button
-          _buildControlButton(
-            icon: Icons.settings,
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const KeyboardSettingsScreen()),
-              );
-            },
-            tooltip: 'Configurar teclas',
+          Material(
+            color: const Color(0xFF3D3D3D),
+            borderRadius: BorderRadius.circular(4),
+            child: InkWell(
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const KeyboardSettingsScreen()),
+                );
+              },
+              borderRadius: BorderRadius.circular(4),
+              child: Container(
+                width: 32,
+                height: 28,
+                alignment: Alignment.center,
+                child: Icon(Icons.settings, size: 16, color: Colors.grey.shade400),
+              ),
+            ),
           ),
           const SizedBox(width: 2),
           // Modifier indicator
@@ -184,27 +184,6 @@ class _TerminalKeyboardState extends State<TerminalKeyboard> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildControlButton({
-    required IconData icon,
-    required VoidCallback onTap,
-    required String tooltip,
-  }) {
-    return Material(
-      color: const Color(0xFF3D3D3D),
-      borderRadius: BorderRadius.circular(4),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(4),
-        child: Container(
-          width: 32,
-          height: 28,
-          alignment: Alignment.center,
-          child: Icon(icon, size: 16, color: Colors.grey.shade400),
-        ),
       ),
     );
   }

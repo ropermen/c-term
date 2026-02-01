@@ -208,7 +208,6 @@ class _TerminalView extends StatefulWidget {
 
 class _TerminalViewState extends State<_TerminalView> {
   final _terminalController = TerminalController();
-  bool _showKeyboard = true;
 
   @override
   void dispose() {
@@ -281,44 +280,10 @@ class _TerminalViewState extends State<_TerminalView> {
             ),
           ),
         ),
-        if (_showKeyboard)
-          TerminalKeyboard(
-            onKeyPressed: _sendToTerminal,
-            onToggleKeyboard: () => setState(() => _showKeyboard = false),
-          )
-        else
-          _buildMinimizedBar(),
-      ],
-    );
-  }
-
-  Widget _buildMinimizedBar() {
-    return Container(
-      color: const Color(0xFF252526),
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-          child: Row(
-            children: [
-              Material(
-                color: const Color(0xFF3D3D3D),
-                borderRadius: BorderRadius.circular(4),
-                child: InkWell(
-                  onTap: () => setState(() => _showKeyboard = true),
-                  borderRadius: BorderRadius.circular(4),
-                  child: Container(
-                    width: 32,
-                    height: 28,
-                    alignment: Alignment.center,
-                    child: Icon(Icons.keyboard, size: 16, color: Colors.grey.shade400),
-                  ),
-                ),
-              ),
-            ],
-          ),
+        TerminalKeyboard(
+          onKeyPressed: _sendToTerminal,
         ),
-      ),
+      ],
     );
   }
 
