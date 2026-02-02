@@ -5,6 +5,7 @@ import '../providers/terminal_provider.dart';
 import '../models/ssh_connection.dart';
 import '../services/storage_service.dart';
 import '../services/auth_service.dart';
+import '../services/update_service.dart';
 import 'connection_form_screen.dart';
 import 'terminal_screen.dart';
 
@@ -17,6 +18,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _searchController = TextEditingController();
+  final UpdateService _updateService = UpdateService();
   String _searchQuery = '';
 
   @override
@@ -24,7 +26,87 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ConnectionsProvider>().loadConnections();
+      _checkForUpdates();
     });
+  }
+
+  Future<void> _checkForUpdates() async {
+    final updateInfo = await _updateService.checkForUpdate();
+    if (updateInfo != null && mounted) {
+      _showUpdateDialog(updateInfo);
+    }
+  }
+
+  void _showUpdateDialog(UpdateInfo updateInfo) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF2C2C2E),
+        title: const Row(
+          children: [
+            Icon(Icons.system_update, color: Color(0xFF5B8DEF)),
+            SizedBox(width: 8),
+            Text(
+              'Atualizacao disponivel',
+              style: TextStyle(color: Colors.white),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Versao ${updateInfo.version}',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Novidades:',
+              style: TextStyle(
+                color: Colors.grey.shade400,
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              updateInfo.changelog,
+              style: TextStyle(
+                color: Colors.grey.shade300,
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(
+              'Depois',
+              style: TextStyle(color: Colors.grey.shade400),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              _updateService.openDownloadUrl(updateInfo.downloadUrl);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF5B8DEF),
+            ),
+            child: const Text(
+              'Atualizar',
+              style: TextStyle(color: Colors.black),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
