@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -344,7 +345,7 @@ class _TerminalViewState extends State<_TerminalView> {
 
   void _sendToTerminal(String data) {
     if (widget.session.shell != null && widget.session.isConnected) {
-      widget.session.shell!.write(Uint8List.fromList(data.codeUnits));
+      widget.session.shell!.write(Uint8List.fromList(utf8.encode(data)));
     }
   }
 

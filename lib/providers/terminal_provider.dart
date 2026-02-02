@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:xterm/xterm.dart';
@@ -108,11 +109,11 @@ class TerminalProvider extends ChangeNotifier {
       _updateWakelock();
 
       shell.stdout.listen((data) {
-        terminal.write(String.fromCharCodes(data));
+        terminal.write(utf8.decode(data, allowMalformed: true));
       });
 
       shell.stderr.listen((data) {
-        terminal.write(String.fromCharCodes(data));
+        terminal.write(utf8.decode(data, allowMalformed: true));
       });
 
       shell.done.then((_) {
@@ -122,7 +123,7 @@ class TerminalProvider extends ChangeNotifier {
       });
 
       terminal.onOutput = (data) {
-        shell.write(Uint8List.fromList(data.codeUnits));
+        shell.write(Uint8List.fromList(utf8.encode(data)));
       };
 
       terminal.onResize = (width, height, pixelWidth, pixelHeight) {
