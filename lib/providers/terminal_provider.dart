@@ -6,10 +6,60 @@ import 'package:dartssh2/dartssh2.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import '../models/ssh_connection.dart';
 
+/// Buffered UTF-8 decoder that handles partial multi-byte sequences
+class Utf8StreamDecoder {
+  final List<int> _buffer = [];
+
+  String decode(Uint8List data) {
+    _buffer.addAll(data);
+
+    // Find the last complete UTF-8 sequence
+    int validEnd = _buffer.length;
+
+    // Check if the last bytes are incomplete UTF-8 sequences
+    for (int i = 1; i <= 4 && i <= _buffer.length; i++) {
+      final byte = _buffer[_buffer.length - i];
+      if ((byte & 0xC0) == 0xC0) {
+        // This is a leading byte, check if sequence is complete
+        int expectedLength;
+        if ((byte & 0xF8) == 0xF0) {
+          expectedLength = 4;
+        } else if ((byte & 0xF0) == 0xE0) {
+          expectedLength = 3;
+        } else if ((byte & 0xE0) == 0xC0) {
+          expectedLength = 2;
+        } else {
+          continue;
+        }
+
+        final availableBytes = i;
+        if (availableBytes < expectedLength) {
+          // Incomplete sequence, don't decode these bytes yet
+          validEnd = _buffer.length - i;
+        }
+        break;
+      }
+    }
+
+    if (validEnd == 0) {
+      return '';
+    }
+
+    final toDecodeBytes = _buffer.sublist(0, validEnd);
+    final remaining = _buffer.sublist(validEnd);
+    _buffer.clear();
+    _buffer.addAll(remaining);
+
+    return utf8.decode(toDecodeBytes, allowMalformed: true);
+  }
+}
+
 class TerminalSession {
   final String id;
   final SSHConnection connection;
   final Terminal terminal;
+  final Utf8StreamDecoder stdoutDecoder = Utf8StreamDecoder();
+  final Utf8StreamDecoder stderrDecoder = Utf8StreamDecoder();
   SSHClient? client;
   SSHSession? shell;
   bool isConnected;
@@ -109,11 +159,11 @@ class TerminalProvider extends ChangeNotifier {
       _updateWakelock();
 
       shell.stdout.listen((data) {
-        terminal.write(utf8.decode(data, allowMalformed: true));
+        terminal.write(session.stdoutDecoder.decode(data));
       });
 
       shell.stderr.listen((data) {
-        terminal.write(utf8.decode(data, allowMalformed: true));
+        terminal.write(session.stderrDecoder.decode(data));
       });
 
       shell.done.then((_) {
