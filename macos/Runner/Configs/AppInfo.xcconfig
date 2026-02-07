@@ -5,10 +5,10 @@
 // 'flutter create' template.
 
 // The application's name. By default this is also the title of the Flutter window.
-PRODUCT_NAME = c_term
+PRODUCT_NAME = koder
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.cterm.cTerm
+PRODUCT_BUNDLE_IDENTIFIER = com.koder.cTerm
 
 // The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2026 com.cterm. All rights reserved.
+PRODUCT_COPYRIGHT = Copyright © 2026 com.koder. All rights reserved.

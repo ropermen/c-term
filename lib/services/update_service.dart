@@ -32,7 +32,7 @@ class UpdateInfo {
 
 class UpdateService {
   static const String _releasesUrl =
-      'https://raw.githubusercontent.com/ropermen/c-term-releases/main/releases.json';
+      'https://raw.githubusercontent.com/ropermen/koder-releases/main/releases.json';
 
   Future<UpdateInfo?> checkForUpdate() async {
     try {

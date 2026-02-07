@@ -24,7 +24,7 @@ class CTermApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => KeyboardProvider()),
       ],
       child: MaterialApp(
-        title: 'c-term',
+        title: 'koder',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           useMaterial3: true,

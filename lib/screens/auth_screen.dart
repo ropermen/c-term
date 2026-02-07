@@ -55,7 +55,7 @@ class _AuthScreenState extends State<AuthScreen> {
     }
 
     final success = await _authService.authenticate(
-      localizedReason: 'Autentique-se para acessar o c-term',
+      localizedReason: 'Autentique-se para acessar o koder',
     );
 
     if (mounted) {
@@ -83,14 +83,14 @@ class _AuthScreenState extends State<AuthScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.terminal,
-              size: 80,
-              color: Color(0xFF5B8DEF),
+            Image.asset(
+              'assets/app_icon.png',
+              width: 80,
+              height: 80,
             ),
             const SizedBox(height: 24),
             const Text(
-              'c-term',
+              'koder',
               style: TextStyle(
                 fontSize: 32,
                 fontWeight: FontWeight.bold,

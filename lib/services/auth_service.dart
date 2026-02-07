@@ -28,7 +28,7 @@ class AuthService {
   }
 
   Future<bool> authenticate({
-    String localizedReason = 'Autentique-se para acessar o c-term',
+    String localizedReason = 'Autentique-se para acessar o koder',
   }) async {
     try {
       final bool didAuthenticate = await _localAuth.authenticate(

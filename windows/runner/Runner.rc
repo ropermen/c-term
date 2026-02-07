@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.cterm" "\0"
-            VALUE "FileDescription", "c_term" "\0"
+            VALUE "CompanyName", "com.koder" "\0"
+            VALUE "FileDescription", "koder" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "c_term" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2026 com.cterm. All rights reserved." "\0"
-            VALUE "OriginalFilename", "c_term.exe" "\0"
-            VALUE "ProductName", "c_term" "\0"
+            VALUE "InternalName", "koder" "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2026 com.koder. All rights reserved." "\0"
+            VALUE "OriginalFilename", "koder.exe" "\0"
+            VALUE "ProductName", "koder" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

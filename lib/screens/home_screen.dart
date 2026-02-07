@@ -251,11 +251,11 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: const Color(0xFF1C1C1E),
       appBar: AppBar(
         backgroundColor: const Color(0xFF2C2C2E),
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.terminal, color: Color(0xFF5B8DEF)),
-            SizedBox(width: 8),
-            Text('c-term', style: TextStyle(color: Colors.white)),
+            Image.asset('assets/app_icon.png', width: 24, height: 24),
+            const SizedBox(width: 8),
+            const Text('koder', style: TextStyle(color: Colors.white)),
           ],
         ),
         actions: [
@@ -269,7 +269,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     MaterialPageRoute(builder: (_) => const TerminalScreen()),
                   );
                 },
-                icon: const Icon(Icons.terminal, color: Color(0xFF5B8DEF)),
+                icon: Image.asset('assets/app_icon.png', width: 20, height: 20),
                 label: Text(
                   '$sessionCount ativa${sessionCount > 1 ? 's' : ''}',
                   style: const TextStyle(color: Color(0xFF5B8DEF)),

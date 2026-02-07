@@ -1,4 +1,4 @@
-package com.cterm.c_term
+package com.koder.koder
 
 import io.flutter.embedding.android.FlutterFragmentActivity
 

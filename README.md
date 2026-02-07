@@ -1,4 +1,4 @@
-# c-term
+# koder
 
 Cliente SSH para Flutter com autenticacao biometrica e suporte a multiplas conexoes simultaneas.
 

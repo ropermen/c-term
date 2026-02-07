@@ -1,6 +1,6 @@
 {
-    "name": "c_term",
-    "short_name": "c_term",
+    "name": "koder",
+    "short_name": "koder",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
