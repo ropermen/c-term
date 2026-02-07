@@ -4,9 +4,14 @@ import '../models/ssh_connection.dart';
 import '../providers/connections_provider.dart';
 
 class ConnectionFormScreen extends StatefulWidget {
-  final SSHConnection? connection;
+  final Connection? connection;
+  final ConnectionType connectionType;
 
-  const ConnectionFormScreen({super.key, this.connection});
+  const ConnectionFormScreen({
+    super.key,
+    this.connection,
+    this.connectionType = ConnectionType.ssh,
+  });
 
   @override
   State<ConnectionFormScreen> createState() => _ConnectionFormScreenState();
@@ -20,12 +25,14 @@ class _ConnectionFormScreenState extends State<ConnectionFormScreen> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   final _privateKeyController = TextEditingController();
+  final _domainController = TextEditingController();
 
   bool _usePrivateKey = false;
   bool _obscurePassword = true;
   bool _isSaving = false;
 
   bool get _isEditing => widget.connection != null;
+  ConnectionType get _type => widget.connection?.type ?? widget.connectionType;
 
   @override
   void initState() {
@@ -37,9 +44,10 @@ class _ConnectionFormScreenState extends State<ConnectionFormScreen> {
       _usernameController.text = widget.connection!.username;
       _passwordController.text = widget.connection!.password ?? '';
       _privateKeyController.text = widget.connection!.privateKey ?? '';
+      _domainController.text = widget.connection!.domain ?? '';
       _usePrivateKey = widget.connection!.privateKey?.isNotEmpty ?? false;
     } else {
-      _portController.text = '22';
+      _portController.text = _type.defaultPort.toString();
     }
   }
 
@@ -51,6 +59,7 @@ class _ConnectionFormScreenState extends State<ConnectionFormScreen> {
     _usernameController.dispose();
     _passwordController.dispose();
     _privateKeyController.dispose();
+    _domainController.dispose();
     super.dispose();
   }
 
@@ -70,6 +79,7 @@ class _ConnectionFormScreenState extends State<ConnectionFormScreen> {
           username: _usernameController.text.trim(),
           password: _usePrivateKey ? null : _passwordController.text,
           privateKey: _usePrivateKey ? _privateKeyController.text : null,
+          domain: _type == ConnectionType.rdp ? _domainController.text.trim() : null,
         );
         await provider.updateConnection(updated);
       } else {
@@ -80,6 +90,8 @@ class _ConnectionFormScreenState extends State<ConnectionFormScreen> {
           username: _usernameController.text.trim(),
           password: _usePrivateKey ? null : _passwordController.text,
           privateKey: _usePrivateKey ? _privateKeyController.text : null,
+          type: _type,
+          domain: _type == ConnectionType.rdp ? _domainController.text.trim() : null,
         );
       }
 
@@ -104,12 +116,16 @@ class _ConnectionFormScreenState extends State<ConnectionFormScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final title = _isEditing
+        ? 'Editar Conexão ${_type.label}'
+        : 'Nova Conexão ${_type.label}';
+
     return Scaffold(
       backgroundColor: const Color(0xFF1C1C1E),
       appBar: AppBar(
         backgroundColor: const Color(0xFF2C2C2E),
         title: Text(
-          _isEditing ? 'Editar Conexão' : 'Nova Conexão',
+          title,
           style: const TextStyle(color: Colors.white),
         ),
         iconTheme: const IconThemeData(color: Colors.white),
@@ -149,7 +165,7 @@ class _ConnectionFormScreenState extends State<ConnectionFormScreen> {
             _buildTextField(
               controller: _portController,
               label: 'Porta',
-              hint: '22',
+              hint: _type.defaultPort.toString(),
               icon: Icons.numbers,
               keyboardType: TextInputType.number,
               validator: (value) {
@@ -164,102 +180,102 @@ class _ConnectionFormScreenState extends State<ConnectionFormScreen> {
               },
             ),
             const SizedBox(height: 16),
-            _buildTextField(
-              controller: _usernameController,
-              label: 'Usuário',
-              hint: 'Ex: root',
-              icon: Icons.person_outline,
-              validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return 'Informe o usuário';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 24),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFF2C2C2E),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Método de autenticação',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _AuthMethodButton(
-                          label: 'Senha',
-                          icon: Icons.password,
-                          isSelected: !_usePrivateKey,
-                          onTap: () => setState(() => _usePrivateKey = false),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _AuthMethodButton(
-                          label: 'Chave SSH',
-                          icon: Icons.key,
-                          isSelected: _usePrivateKey,
-                          onTap: () => setState(() => _usePrivateKey = true),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            if (_usePrivateKey)
+
+            // Username: SSH and RDP require it, VNC does not
+            if (_type != ConnectionType.vnc)
               _buildTextField(
-                controller: _privateKeyController,
-                label: 'Chave privada (PEM)',
-                hint: '-----BEGIN OPENSSH PRIVATE KEY-----\n...',
-                icon: Icons.key,
-                maxLines: 8,
+                controller: _usernameController,
+                label: 'Usuário',
+                hint: 'Ex: root',
+                icon: Icons.person_outline,
                 validator: (value) {
-                  if (_usePrivateKey &&
-                      (value == null || value.trim().isEmpty)) {
-                    return 'Informe a chave privada';
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Informe o usuário';
                   }
                   return null;
                 },
-              )
-            else
+              ),
+            if (_type != ConnectionType.vnc) const SizedBox(height: 16),
+
+            // Domain: RDP only
+            if (_type == ConnectionType.rdp) ...[
               _buildTextField(
-                controller: _passwordController,
-                label: 'Senha',
-                hint: 'Digite a senha',
-                icon: Icons.lock_outline,
-                obscureText: _obscurePassword,
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _obscurePassword
-                        ? Icons.visibility_outlined
-                        : Icons.visibility_off_outlined,
-                    color: Colors.grey,
-                  ),
-                  onPressed: () =>
-                      setState(() => _obscurePassword = !_obscurePassword),
+                controller: _domainController,
+                label: 'Domínio (opcional)',
+                hint: 'Ex: CORP',
+                icon: Icons.domain,
+              ),
+              const SizedBox(height: 16),
+            ],
+
+            // Auth method: SSH has password/key toggle, RDP and VNC have password only
+            if (_type == ConnectionType.ssh) ...[
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2C2C2E),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                validator: (value) {
-                  if (!_usePrivateKey &&
-                      (value == null || value.isEmpty)) {
-                    return 'Informe a senha';
-                  }
-                  return null;
-                },
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Método de autenticação',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _AuthMethodButton(
+                            label: 'Senha',
+                            icon: Icons.password,
+                            isSelected: !_usePrivateKey,
+                            onTap: () => setState(() => _usePrivateKey = false),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _AuthMethodButton(
+                            label: 'Chave SSH',
+                            icon: Icons.key,
+                            isSelected: _usePrivateKey,
+                            onTap: () => setState(() => _usePrivateKey = true),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
+              const SizedBox(height: 16),
+              if (_usePrivateKey)
+                _buildTextField(
+                  controller: _privateKeyController,
+                  label: 'Chave privada (PEM)',
+                  hint: '-----BEGIN OPENSSH PRIVATE KEY-----\n...',
+                  icon: Icons.key,
+                  maxLines: 8,
+                  validator: (value) {
+                    if (_usePrivateKey &&
+                        (value == null || value.trim().isEmpty)) {
+                      return 'Informe a chave privada';
+                    }
+                    return null;
+                  },
+                )
+              else
+                _buildPasswordField(),
+            ] else ...[
+              // RDP and VNC: password only
+              _buildPasswordField(),
+            ],
+
             const SizedBox(height: 32),
             SizedBox(
               height: 50,
@@ -293,6 +309,33 @@ class _ConnectionFormScreenState extends State<ConnectionFormScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildPasswordField() {
+    return _buildTextField(
+      controller: _passwordController,
+      label: 'Senha',
+      hint: 'Digite a senha',
+      icon: Icons.lock_outline,
+      obscureText: _obscurePassword,
+      suffixIcon: IconButton(
+        icon: Icon(
+          _obscurePassword
+              ? Icons.visibility_outlined
+              : Icons.visibility_off_outlined,
+          color: Colors.grey,
+        ),
+        onPressed: () =>
+            setState(() => _obscurePassword = !_obscurePassword),
+      ),
+      validator: (value) {
+        if (_type == ConnectionType.ssh && !_usePrivateKey &&
+            (value == null || value.isEmpty)) {
+          return 'Informe a senha';
+        }
+        return null;
+      },
     );
   }
 

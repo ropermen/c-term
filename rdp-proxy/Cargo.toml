@@ -1,0 +1,21 @@
+[package]
+name = "rdp-proxy"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+ironrdp-rdcleanpath = "0.2"
+tokio = { version = "1", features = ["full"] }
+tokio-tungstenite = "0.24"
+tokio-native-tls = "0.3"
+native-tls = "0.2"
+der = { version = "0.7", features = ["alloc"] }
+futures-util = { version = "0.3", features = ["sink"] }
+anyhow = "1"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+[profile.release]
+opt-level = "s"
+lto = true
+strip = true

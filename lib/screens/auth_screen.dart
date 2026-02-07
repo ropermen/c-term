@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import '../services/storage_service.dart';
-import 'home_screen.dart';
+import 'workspace_screen.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -28,7 +28,7 @@ class _AuthScreenState extends State<AuthScreen> {
     if (!biometricEnabled) {
       if (mounted) {
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
+          MaterialPageRoute(builder: (_) => const WorkspaceScreen()),
         );
       }
       return;
@@ -48,7 +48,7 @@ class _AuthScreenState extends State<AuthScreen> {
     if (!isAvailable) {
       if (mounted) {
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
+          MaterialPageRoute(builder: (_) => const WorkspaceScreen()),
         );
       }
       return;
@@ -65,7 +65,7 @@ class _AuthScreenState extends State<AuthScreen> {
 
       if (success) {
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
+          MaterialPageRoute(builder: (_) => const WorkspaceScreen()),
         );
       } else {
         setState(() {
@@ -92,8 +92,9 @@ class _AuthScreenState extends State<AuthScreen> {
             const Text(
               'koder',
               style: TextStyle(
-                fontSize: 32,
+                fontSize: 26,
                 fontWeight: FontWeight.bold,
+                fontFamily: 'Expansiva',
                 color: Colors.white,
               ),
             ),

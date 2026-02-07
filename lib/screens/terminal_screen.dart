@@ -7,6 +7,32 @@ import '../providers/terminal_provider.dart';
 import '../services/storage_service.dart';
 import '../widgets/terminal_keyboard.dart';
 
+const TerminalTheme terminalTheme = TerminalTheme(
+  cursor: Color(0xFFAEAFAD),
+  selection: Color(0xFF264F78),
+  foreground: Color(0xFFCCCCCC),
+  background: Color(0xFF1C1C1E),
+  black: Color(0xFF000000),
+  red: Color(0xFFCD3131),
+  green: Color(0xFF0DBC79),
+  yellow: Color(0xFFE5E510),
+  blue: Color(0xFF2472C8),
+  magenta: Color(0xFFBC3FBC),
+  cyan: Color(0xFF11A8CD),
+  white: Color(0xFFE5E5E5),
+  brightBlack: Color(0xFF666666),
+  brightRed: Color(0xFFF14C4C),
+  brightGreen: Color(0xFF23D18B),
+  brightYellow: Color(0xFFF5F543),
+  brightBlue: Color(0xFF3B8EEA),
+  brightMagenta: Color(0xFFD670D6),
+  brightCyan: Color(0xFF29B8DB),
+  brightWhite: Color(0xFFFFFFFF),
+  searchHitBackground: Color(0xFFFFDF5D),
+  searchHitBackgroundCurrent: Color(0xFFFF9632),
+  searchHitForeground: Color(0xFF000000),
+);
+
 class TerminalScreen extends StatefulWidget {
   const TerminalScreen({super.key});
 
@@ -232,7 +258,7 @@ class _TerminalScreenState extends State<TerminalScreen> {
                 : null,
           ),
           body: provider.activeSession != null
-              ? _TerminalView(session: provider.activeSession!, fontSize: _fontSize)
+              ? TerminalViewPanel(session: provider.activeSession!, fontSize: _fontSize)
               : const Center(
                   child: Text(
                     'Selecione uma sessao',
@@ -322,17 +348,17 @@ class _TabBar extends StatelessWidget {
   }
 }
 
-class _TerminalView extends StatefulWidget {
+class TerminalViewPanel extends StatefulWidget {
   final TerminalSession session;
   final double fontSize;
 
-  const _TerminalView({required this.session, required this.fontSize});
+  const TerminalViewPanel({super.key, required this.session, required this.fontSize});
 
   @override
-  State<_TerminalView> createState() => _TerminalViewState();
+  State<TerminalViewPanel> createState() => _TerminalViewPanelState();
 }
 
-class _TerminalViewState extends State<_TerminalView> {
+class _TerminalViewPanelState extends State<TerminalViewPanel> {
   final _terminalController = TerminalController();
   final _terminalFocusNode = FocusNode();
 
@@ -399,7 +425,7 @@ class _TerminalViewState extends State<_TerminalView> {
             widget.session.terminal,
             controller: _terminalController,
             focusNode: _terminalFocusNode,
-            theme: _terminalTheme,
+            theme: terminalTheme,
             padding: const EdgeInsets.all(8),
             autofocus: true,
             backgroundOpacity: 1.0,
@@ -416,30 +442,4 @@ class _TerminalViewState extends State<_TerminalView> {
       ],
     );
   }
-
-  TerminalTheme get _terminalTheme => const TerminalTheme(
-        cursor: Color(0xFFAEAFAD),
-        selection: Color(0xFF264F78),
-        foreground: Color(0xFFCCCCCC),
-        background: Color(0xFF1C1C1E),
-        black: Color(0xFF000000),
-        red: Color(0xFFCD3131),
-        green: Color(0xFF0DBC79),
-        yellow: Color(0xFFE5E510),
-        blue: Color(0xFF2472C8),
-        magenta: Color(0xFFBC3FBC),
-        cyan: Color(0xFF11A8CD),
-        white: Color(0xFFE5E5E5),
-        brightBlack: Color(0xFF666666),
-        brightRed: Color(0xFFF14C4C),
-        brightGreen: Color(0xFF23D18B),
-        brightYellow: Color(0xFFF5F543),
-        brightBlue: Color(0xFF3B8EEA),
-        brightMagenta: Color(0xFFD670D6),
-        brightCyan: Color(0xFF29B8DB),
-        brightWhite: Color(0xFFFFFFFF),
-        searchHitBackground: Color(0xFFFFDF5D),
-        searchHitBackgroundCurrent: Color(0xFFFF9632),
-        searchHitForeground: Color(0xFF000000),
-      );
 }

@@ -65,6 +65,9 @@ dependencies:
   # URL launcher for opening download links
   url_launcher: ^6.2.0
 
+  # Web platform interop (for RDP canvas integration)
+  web: ^1.0.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -118,5 +121,12 @@ flutter:
   #       - asset: fonts/TrajanPro_Bold.ttf
   #         weight: 700
   #
+  fonts:
+    - family: Expansiva
+      fonts:
+        - asset: fonts/Expansiva.otf
+        - asset: fonts/Expansiva-Bold.otf
+          weight: 700
+
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package

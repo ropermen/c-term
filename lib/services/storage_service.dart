@@ -4,7 +4,8 @@ import '../models/ssh_connection.dart';
 import '../models/keyboard_key.dart';
 
 class StorageService {
-  static const String _connectionsKey = 'ssh_connections';
+  static const String _legacyConnectionsKey = 'ssh_connections';
+  static const String _connectionsKey = 'connections_v2';
   static const String _keyboardKeysKey = 'keyboard_keys';
   static const String _biometricEnabledKey = 'biometric_enabled';
   static const String _terminalFontSizeKey = 'terminal_font_size';
@@ -19,7 +20,28 @@ class StorageService {
           ),
         );
 
-  Future<List<SSHConnection>> getConnections() async {
+  Future<void> migrateConnectionsIfNeeded() async {
+    final String? v2Data = await _storage.read(key: _connectionsKey);
+    if (v2Data != null) return;
+
+    final String? legacyData = await _storage.read(key: _legacyConnectionsKey);
+    if (legacyData == null || legacyData.isEmpty) return;
+
+    try {
+      final List<dynamic> jsonList = jsonDecode(legacyData) as List<dynamic>;
+      final migrated = jsonList.map((json) {
+        final map = json as Map<String, dynamic>;
+        if (!map.containsKey('type')) {
+          map['type'] = 'ssh';
+        }
+        return map;
+      }).toList();
+
+      await _storage.write(key: _connectionsKey, value: jsonEncode(migrated));
+    } catch (_) {}
+  }
+
+  Future<List<Connection>> getConnections() async {
     final String? data = await _storage.read(key: _connectionsKey);
     if (data == null || data.isEmpty) {
       return [];
@@ -27,24 +49,24 @@ class StorageService {
 
     final List<dynamic> jsonList = jsonDecode(data) as List<dynamic>;
     return jsonList
-        .map((json) => SSHConnection.fromJson(json as Map<String, dynamic>))
+        .map((json) => Connection.fromJson(json as Map<String, dynamic>))
         .toList();
   }
 
-  Future<void> saveConnections(List<SSHConnection> connections) async {
+  Future<void> saveConnections(List<Connection> connections) async {
     final String data = jsonEncode(
       connections.map((c) => c.toJson()).toList(),
     );
     await _storage.write(key: _connectionsKey, value: data);
   }
 
-  Future<void> addConnection(SSHConnection connection) async {
+  Future<void> addConnection(Connection connection) async {
     final connections = await getConnections();
     connections.add(connection);
     await saveConnections(connections);
   }
 
-  Future<void> updateConnection(SSHConnection connection) async {
+  Future<void> updateConnection(Connection connection) async {
     final connections = await getConnections();
     final index = connections.indexWhere((c) => c.id == connection.id);
     if (index != -1) {
@@ -59,7 +81,7 @@ class StorageService {
     await saveConnections(connections);
   }
 
-  Future<SSHConnection?> getConnection(String id) async {
+  Future<Connection?> getConnection(String id) async {
     final connections = await getConnections();
     try {
       return connections.firstWhere((c) => c.id == id);

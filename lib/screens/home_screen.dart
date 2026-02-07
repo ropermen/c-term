@@ -250,12 +250,13 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFF1C1C1E),
       appBar: AppBar(
+        toolbarHeight: 36,
         backgroundColor: const Color(0xFF2C2C2E),
         title: Row(
           children: [
-            Image.asset('assets/app_icon.png', width: 24, height: 24),
-            const SizedBox(width: 8),
-            const Text('koder', style: TextStyle(color: Colors.white)),
+            Image.asset('assets/app_icon.png', width: 16, height: 16),
+            const SizedBox(width: 6),
+            const Text('koder', style: TextStyle(fontFamily: 'Expansiva', fontSize: 14, color: Colors.white)),
           ],
         ),
         actions: [
@@ -269,16 +270,16 @@ class _HomeScreenState extends State<HomeScreen> {
                     MaterialPageRoute(builder: (_) => const TerminalScreen()),
                   );
                 },
-                icon: Image.asset('assets/app_icon.png', width: 20, height: 20),
+                icon: Image.asset('assets/app_icon.png', width: 16, height: 16),
                 label: Text(
                   '$sessionCount ativa${sessionCount > 1 ? 's' : ''}',
-                  style: const TextStyle(color: Color(0xFF5B8DEF)),
+                  style: const TextStyle(fontSize: 12, color: Color(0xFF5B8DEF)),
                 ),
               );
             },
           ),
           IconButton(
-            icon: const Icon(Icons.settings, color: Colors.white),
+            icon: const Icon(Icons.settings, size: 20, color: Colors.white),
             tooltip: 'Configuracoes',
             onPressed: () => _showSettingsDialog(),
           ),

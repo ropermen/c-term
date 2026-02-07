@@ -7,14 +7,14 @@ class ConnectionsProvider extends ChangeNotifier {
   final StorageService _storageService;
   final Uuid _uuid = const Uuid();
 
-  List<SSHConnection> _connections = [];
+  List<Connection> _connections = [];
   bool _isLoading = false;
   String? _error;
 
   ConnectionsProvider({StorageService? storageService})
       : _storageService = storageService ?? StorageService();
 
-  List<SSHConnection> get connections => List.unmodifiable(_connections);
+  List<Connection> get connections => List.unmodifiable(_connections);
   bool get isLoading => _isLoading;
   String? get error => _error;
 
@@ -24,6 +24,7 @@ class ConnectionsProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
+      await _storageService.migrateConnectionsIfNeeded();
       _connections = await _storageService.getConnections();
     } catch (e) {
       _error = 'Erro ao carregar conexões: $e';
@@ -40,8 +41,10 @@ class ConnectionsProvider extends ChangeNotifier {
     required String username,
     String? password,
     String? privateKey,
+    ConnectionType type = ConnectionType.ssh,
+    String? domain,
   }) async {
-    final connection = SSHConnection(
+    final connection = Connection(
       id: _uuid.v4(),
       name: name,
       host: host,
@@ -49,6 +52,8 @@ class ConnectionsProvider extends ChangeNotifier {
       username: username,
       password: password,
       privateKey: privateKey,
+      type: type,
+      domain: domain,
     );
 
     try {
@@ -62,7 +67,7 @@ class ConnectionsProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> updateConnection(SSHConnection connection) async {
+  Future<void> updateConnection(Connection connection) async {
     try {
       await _storageService.updateConnection(connection);
       final index = _connections.indexWhere((c) => c.id == connection.id);
@@ -89,7 +94,7 @@ class ConnectionsProvider extends ChangeNotifier {
     }
   }
 
-  SSHConnection? getConnection(String id) {
+  Connection? getConnection(String id) {
     try {
       return _connections.firstWhere((c) => c.id == id);
     } catch (e) {

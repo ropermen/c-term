@@ -54,9 +54,11 @@ class Utf8StreamDecoder {
   }
 }
 
+enum TabWindowState { normal, minimized, maximized }
+
 class TerminalSession {
   final String id;
-  final SSHConnection connection;
+  final Connection connection;
   final Terminal terminal;
   final Utf8StreamDecoder stdoutDecoder = Utf8StreamDecoder();
   final Utf8StreamDecoder stderrDecoder = Utf8StreamDecoder();
@@ -65,6 +67,7 @@ class TerminalSession {
   bool isConnected;
   bool isConnecting;
   String? error;
+  TabWindowState windowState;
 
   TerminalSession({
     required this.id,
@@ -75,6 +78,7 @@ class TerminalSession {
     this.isConnected = false,
     this.isConnecting = false,
     this.error,
+    this.windowState = TabWindowState.normal,
   });
 }
 
@@ -99,7 +103,7 @@ class TerminalProvider extends ChangeNotifier {
     }
   }
 
-  Future<TerminalSession> createSession(SSHConnection connection) async {
+  Future<TerminalSession> createSession(Connection connection) async {
     final terminal = Terminal(
       maxLines: 10000,
     );
@@ -114,6 +118,21 @@ class TerminalProvider extends ChangeNotifier {
     _sessions[connection.id] = session;
     _activeSessionId = connection.id;
     notifyListeners();
+
+    if (connection.type == ConnectionType.rdp) {
+      // RDP connection is handled by RdpViewPanel widget
+      session.isConnecting = false;
+      session.isConnected = true;
+      notifyListeners();
+      return session;
+    }
+
+    if (connection.type == ConnectionType.vnc) {
+      terminal.write('VNC — em breve\r\n');
+      session.isConnecting = false;
+      notifyListeners();
+      return session;
+    }
 
     try {
       terminal.write('Conectando a ${connection.host}:${connection.port}...\r\n');
@@ -197,6 +216,24 @@ class TerminalProvider extends ChangeNotifier {
       _activeSessionId = sessionId;
       notifyListeners();
     }
+  }
+
+  void toggleMinimize(String sessionId) {
+    final session = _sessions[sessionId];
+    if (session == null) return;
+    session.windowState = session.windowState == TabWindowState.minimized
+        ? TabWindowState.normal
+        : TabWindowState.minimized;
+    notifyListeners();
+  }
+
+  void toggleMaximize(String sessionId) {
+    final session = _sessions[sessionId];
+    if (session == null) return;
+    session.windowState = session.windowState == TabWindowState.maximized
+        ? TabWindowState.normal
+        : TabWindowState.maximized;
+    notifyListeners();
   }
 
   void closeSession(String sessionId) {

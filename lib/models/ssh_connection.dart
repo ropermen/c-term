@@ -1,6 +1,47 @@
 import 'dart:convert';
 
-class SSHConnection {
+enum ConnectionType {
+  ssh,
+  rdp,
+  vnc;
+
+  String toJson() => name;
+
+  static ConnectionType fromJson(String? value) {
+    switch (value) {
+      case 'rdp':
+        return ConnectionType.rdp;
+      case 'vnc':
+        return ConnectionType.vnc;
+      default:
+        return ConnectionType.ssh;
+    }
+  }
+
+  int get defaultPort {
+    switch (this) {
+      case ConnectionType.ssh:
+        return 22;
+      case ConnectionType.rdp:
+        return 3389;
+      case ConnectionType.vnc:
+        return 5900;
+    }
+  }
+
+  String get label {
+    switch (this) {
+      case ConnectionType.ssh:
+        return 'SSH';
+      case ConnectionType.rdp:
+        return 'RDP';
+      case ConnectionType.vnc:
+        return 'VNC';
+    }
+  }
+}
+
+class Connection {
   final String id;
   final String name;
   final String host;
@@ -8,23 +49,28 @@ class SSHConnection {
   final String username;
   final String? password;
   final String? privateKey;
+  final String? domain;
+  final ConnectionType type;
   final DateTime createdAt;
   final DateTime updatedAt;
 
-  SSHConnection({
+  Connection({
     required this.id,
     required this.name,
     required this.host,
-    this.port = 22,
+    int? port,
     required this.username,
     this.password,
     this.privateKey,
+    this.domain,
+    this.type = ConnectionType.ssh,
     DateTime? createdAt,
     DateTime? updatedAt,
-  })  : createdAt = createdAt ?? DateTime.now(),
+  })  : port = port ?? type.defaultPort,
+        createdAt = createdAt ?? DateTime.now(),
         updatedAt = updatedAt ?? DateTime.now();
 
-  SSHConnection copyWith({
+  Connection copyWith({
     String? id,
     String? name,
     String? host,
@@ -32,10 +78,12 @@ class SSHConnection {
     String? username,
     String? password,
     String? privateKey,
+    String? domain,
+    ConnectionType? type,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
-    return SSHConnection(
+    return Connection(
       id: id ?? this.id,
       name: name ?? this.name,
       host: host ?? this.host,
@@ -43,6 +91,8 @@ class SSHConnection {
       username: username ?? this.username,
       password: password ?? this.password,
       privateKey: privateKey ?? this.privateKey,
+      domain: domain ?? this.domain,
+      type: type ?? this.type,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? DateTime.now(),
     );
@@ -57,20 +107,25 @@ class SSHConnection {
       'username': username,
       'password': password,
       'privateKey': privateKey,
+      'domain': domain,
+      'type': type.toJson(),
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
     };
   }
 
-  factory SSHConnection.fromJson(Map<String, dynamic> json) {
-    return SSHConnection(
+  factory Connection.fromJson(Map<String, dynamic> json) {
+    final type = ConnectionType.fromJson(json['type'] as String?);
+    return Connection(
       id: json['id'] as String,
       name: json['name'] as String,
       host: json['host'] as String,
-      port: json['port'] as int? ?? 22,
-      username: json['username'] as String,
+      port: json['port'] as int? ?? type.defaultPort,
+      username: json['username'] as String? ?? '',
       password: json['password'] as String?,
       privateKey: json['privateKey'] as String?,
+      domain: json['domain'] as String?,
+      type: type,
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
     );
@@ -78,21 +133,23 @@ class SSHConnection {
 
   String toJsonString() => jsonEncode(toJson());
 
-  factory SSHConnection.fromJsonString(String jsonString) {
-    return SSHConnection.fromJson(jsonDecode(jsonString) as Map<String, dynamic>);
+  factory Connection.fromJsonString(String jsonString) {
+    return Connection.fromJson(jsonDecode(jsonString) as Map<String, dynamic>);
   }
 
   @override
   String toString() {
-    return 'SSHConnection(id: $id, name: $name, host: $host, port: $port, username: $username)';
+    return 'Connection(id: $id, name: $name, type: ${type.label}, host: $host, port: $port, username: $username)';
   }
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    return other is SSHConnection && other.id == id;
+    return other is Connection && other.id == id;
   }
 
   @override
   int get hashCode => id.hashCode;
 }
+
+typedef SSHConnection = Connection;

@@ -1,0 +1,6 @@
+build/
+.dart_tool/
+.git/
+.idea/
+*.iml
+rdp-proxy/target/
