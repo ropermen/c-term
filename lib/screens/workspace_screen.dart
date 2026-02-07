@@ -28,8 +28,12 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
   void initState() {
     super.initState();
     _loadFontSize();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ConnectionsProvider>().loadConnections();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final connProvider = context.read<ConnectionsProvider>();
+      await connProvider.loadConnections();
+      if (mounted) {
+        await context.read<TerminalProvider>().restoreSessions(connProvider.connections);
+      }
       _checkForUpdates();
     });
   }
@@ -116,18 +120,16 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
   }
 
   void _openConnectionForm(ConnectionType type) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => ConnectionFormScreen(connectionType: type),
-      ),
+    showDialog(
+      context: context,
+      builder: (_) => ConnectionFormScreen(connectionType: type, asDialog: true),
     );
   }
 
   void _editConnection(Connection connection) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => ConnectionFormScreen(connection: connection),
-      ),
+    showDialog(
+      context: context,
+      builder: (_) => ConnectionFormScreen(connection: connection, asDialog: true),
     );
   }
 

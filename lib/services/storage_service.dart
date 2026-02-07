@@ -9,6 +9,7 @@ class StorageService {
   static const String _keyboardKeysKey = 'keyboard_keys';
   static const String _biometricEnabledKey = 'biometric_enabled';
   static const String _terminalFontSizeKey = 'terminal_font_size';
+  static const String _activeSessionsKey = 'active_sessions';
   static const double defaultFontSize = 14.0;
 
   final FlutterSecureStorage _storage;
@@ -132,5 +133,37 @@ class StorageService {
 
   Future<void> setTerminalFontSize(double size) async {
     await _storage.write(key: _terminalFontSizeKey, value: size.toString());
+  }
+
+  /// Save the list of active session connection IDs and the active tab.
+  Future<void> saveActiveSessions({
+    required List<String> connectionIds,
+    String? activeId,
+  }) async {
+    final data = jsonEncode({
+      'connectionIds': connectionIds,
+      'activeId': activeId,
+    });
+    await _storage.write(key: _activeSessionsKey, value: data);
+  }
+
+  /// Load saved active session info for auto-reconnect on reload.
+  Future<({List<String> connectionIds, String? activeId})> loadActiveSessions() async {
+    final String? data = await _storage.read(key: _activeSessionsKey);
+    if (data == null || data.isEmpty) {
+      return (connectionIds: <String>[], activeId: null);
+    }
+    try {
+      final map = jsonDecode(data) as Map<String, dynamic>;
+      final ids = (map['connectionIds'] as List<dynamic>).cast<String>();
+      final activeId = map['activeId'] as String?;
+      return (connectionIds: ids, activeId: activeId);
+    } catch (_) {
+      return (connectionIds: <String>[], activeId: null);
+    }
+  }
+
+  Future<void> clearActiveSessions() async {
+    await _storage.delete(key: _activeSessionsKey);
   }
 }

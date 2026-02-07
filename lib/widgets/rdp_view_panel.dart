@@ -4,6 +4,7 @@ import 'dart:js_interop_unsafe';
 import 'dart:ui_web' as ui_web;
 import 'package:flutter/material.dart';
 import 'package:web/web.dart' as web;
+import '../models/ssh_connection.dart';
 import '../providers/terminal_provider.dart';
 
 @JS('IronRdpSession')
@@ -45,16 +46,31 @@ class _RdpViewPanelState extends State<RdpViewPanel> {
     _setupView();
   }
 
+  RdpScaleMode get _scaleMode => widget.session.connection.rdpScaleMode;
+
   void _setupView() {
     if (_registeredViewTypes.contains(_viewType)) return;
 
     final canvas = web.document.createElement('canvas') as web.HTMLCanvasElement;
     canvas.width = 1280;
     canvas.height = 720;
-    canvas.style.width = '100%';
-    canvas.style.height = '100%';
     canvas.style.backgroundColor = '#000';
     canvas.tabIndex = 0;
+
+    switch (_scaleMode) {
+      case RdpScaleMode.stretch:
+        canvas.style.width = '100%';
+        canvas.style.height = '100%';
+      case RdpScaleMode.fit:
+        canvas.style.width = '100%';
+        canvas.style.height = '100%';
+        canvas.style.objectFit = 'contain';
+      case RdpScaleMode.clientResolution:
+        // Will be resized to match container in _initAndConnect
+        canvas.style.width = '100%';
+        canvas.style.height = '100%';
+    }
+
     _canvas = canvas;
 
     ui_web.platformViewRegistry.registerViewFactory(
@@ -110,6 +126,20 @@ class _RdpViewPanelState extends State<RdpViewPanel> {
       final conn = widget.session.connection;
       final destination = '${conn.host}:${conn.port}';
 
+      // Determine resolution based on scale mode
+      int width = 1280;
+      int height = 720;
+      if (_scaleMode == RdpScaleMode.clientResolution) {
+        final renderBox = context.findRenderObject() as RenderBox?;
+        if (renderBox != null && renderBox.hasSize) {
+          final dpr = web.window.devicePixelRatio;
+          width = (renderBox.size.width * dpr).round();
+          height = (renderBox.size.height * dpr).round();
+        }
+        _canvas!.width = width;
+        _canvas!.height = height;
+      }
+
       // Build options object for the JS bridge
       final opts = JSObject();
       opts['username'] = conn.username.toJS;
@@ -117,8 +147,8 @@ class _RdpViewPanelState extends State<RdpViewPanel> {
       opts['destination'] = destination.toJS;
       opts['proxyAddress'] = proxyAddress.toJS;
       opts['canvas'] = _canvas!;
-      opts['width'] = (1280 as num).toJS;
-      opts['height'] = (720 as num).toJS;
+      opts['width'] = (width as num).toJS;
+      opts['height'] = (height as num).toJS;
 
       if (conn.domain != null && conn.domain!.isNotEmpty) {
         opts['domain'] = conn.domain!.toJS;

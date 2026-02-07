@@ -51,6 +51,7 @@ class Connection {
   final String? privateKey;
   final String? domain;
   final ConnectionType type;
+  final RdpScaleMode rdpScaleMode;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -64,6 +65,7 @@ class Connection {
     this.privateKey,
     this.domain,
     this.type = ConnectionType.ssh,
+    this.rdpScaleMode = RdpScaleMode.fit,
     DateTime? createdAt,
     DateTime? updatedAt,
   })  : port = port ?? type.defaultPort,
@@ -80,6 +82,7 @@ class Connection {
     String? privateKey,
     String? domain,
     ConnectionType? type,
+    RdpScaleMode? rdpScaleMode,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -93,6 +96,7 @@ class Connection {
       privateKey: privateKey ?? this.privateKey,
       domain: domain ?? this.domain,
       type: type ?? this.type,
+      rdpScaleMode: rdpScaleMode ?? this.rdpScaleMode,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? DateTime.now(),
     );
@@ -109,6 +113,7 @@ class Connection {
       'privateKey': privateKey,
       'domain': domain,
       'type': type.toJson(),
+      'rdpScaleMode': rdpScaleMode.toJson(),
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
     };
@@ -126,6 +131,7 @@ class Connection {
       privateKey: json['privateKey'] as String?,
       domain: json['domain'] as String?,
       type: type,
+      rdpScaleMode: RdpScaleMode.fromJson(json['rdpScaleMode'] as String?),
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
     );
@@ -150,6 +156,47 @@ class Connection {
 
   @override
   int get hashCode => id.hashCode;
+}
+
+enum RdpScaleMode {
+  fit,
+  stretch,
+  clientResolution;
+
+  String toJson() => name;
+
+  static RdpScaleMode fromJson(String? value) {
+    switch (value) {
+      case 'stretch':
+        return RdpScaleMode.stretch;
+      case 'clientResolution':
+        return RdpScaleMode.clientResolution;
+      default:
+        return RdpScaleMode.fit;
+    }
+  }
+
+  String get label {
+    switch (this) {
+      case RdpScaleMode.fit:
+        return 'Ajustar';
+      case RdpScaleMode.stretch:
+        return 'Esticar';
+      case RdpScaleMode.clientResolution:
+        return 'Resolução do cliente';
+    }
+  }
+
+  String get description {
+    switch (this) {
+      case RdpScaleMode.fit:
+        return 'Mantém proporção, com barras laterais se necessário';
+      case RdpScaleMode.stretch:
+        return 'Preenche toda a área, pode distorcer a imagem';
+      case RdpScaleMode.clientResolution:
+        return 'Usa a resolução real do painel como resolução RDP';
+    }
+  }
 }
 
 typedef SSHConnection = Connection;

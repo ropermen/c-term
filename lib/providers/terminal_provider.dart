@@ -5,6 +5,7 @@ import 'package:xterm/xterm.dart';
 import 'package:dartssh2/dartssh2.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import '../models/ssh_connection.dart';
+import '../services/storage_service.dart';
 
 /// Buffered UTF-8 decoder that handles partial multi-byte sequences
 class Utf8StreamDecoder {
@@ -84,6 +85,7 @@ class TerminalSession {
 
 class TerminalProvider extends ChangeNotifier {
   final Map<String, TerminalSession> _sessions = {};
+  final StorageService _storageService = StorageService();
   String? _activeSessionId;
 
   Map<String, TerminalSession> get sessions => Map.unmodifiable(_sessions);
@@ -93,6 +95,13 @@ class TerminalProvider extends ChangeNotifier {
       _activeSessionId != null ? _sessions[_activeSessionId] : null;
 
   List<TerminalSession> get sessionList => _sessions.values.toList();
+
+  void _persistSessions() {
+    _storageService.saveActiveSessions(
+      connectionIds: _sessions.keys.toList(),
+      activeId: _activeSessionId,
+    );
+  }
 
   void _updateWakelock() {
     final connectedSessions = _sessions.values.where((s) => s.isConnected).length;
@@ -123,6 +132,7 @@ class TerminalProvider extends ChangeNotifier {
       // RDP connection is handled by RdpViewPanel widget
       session.isConnecting = false;
       session.isConnected = true;
+      _persistSessions();
       notifyListeners();
       return session;
     }
@@ -199,6 +209,7 @@ class TerminalProvider extends ChangeNotifier {
         shell.resizeTerminal(width, height);
       };
 
+      _persistSessions();
       notifyListeners();
       return session;
     } catch (e) {
@@ -248,6 +259,7 @@ class TerminalProvider extends ChangeNotifier {
       }
 
       _updateWakelock();
+      _persistSessions();
       notifyListeners();
     }
   }
@@ -260,7 +272,26 @@ class TerminalProvider extends ChangeNotifier {
     _sessions.clear();
     _activeSessionId = null;
     _updateWakelock();
+    _persistSessions();
     notifyListeners();
+  }
+
+  /// Restore sessions from storage (auto-reconnect on page reload).
+  Future<void> restoreSessions(List<Connection> connections) async {
+    final saved = await _storageService.loadActiveSessions();
+    if (saved.connectionIds.isEmpty) return;
+
+    for (final connId in saved.connectionIds) {
+      final conn = connections.where((c) => c.id == connId).firstOrNull;
+      if (conn != null && !_sessions.containsKey(connId)) {
+        await createSession(conn);
+      }
+    }
+
+    if (saved.activeId != null && _sessions.containsKey(saved.activeId)) {
+      _activeSessionId = saved.activeId;
+      notifyListeners();
+    }
   }
 
   bool hasSession(String connectionId) {
