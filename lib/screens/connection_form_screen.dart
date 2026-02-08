@@ -32,7 +32,7 @@ class _ConnectionFormScreenState extends State<ConnectionFormScreen> {
   bool _usePrivateKey = false;
   bool _obscurePassword = true;
   bool _isSaving = false;
-  RdpScaleMode _rdpScaleMode = RdpScaleMode.fit;
+  RdpScaleMode _rdpScaleMode = RdpScaleMode.clientResolution;
 
   bool get _isEditing => widget.connection != null;
   ConnectionType get _type => widget.connection?.type ?? widget.connectionType;

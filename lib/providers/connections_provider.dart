@@ -43,7 +43,7 @@ class ConnectionsProvider extends ChangeNotifier {
     String? privateKey,
     ConnectionType type = ConnectionType.ssh,
     String? domain,
-    RdpScaleMode rdpScaleMode = RdpScaleMode.fit,
+    RdpScaleMode rdpScaleMode = RdpScaleMode.clientResolution,
   }) async {
     final connection = Connection(
       id: _uuid.v4(),

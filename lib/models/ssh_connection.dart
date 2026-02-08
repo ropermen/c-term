@@ -65,7 +65,7 @@ class Connection {
     this.privateKey,
     this.domain,
     this.type = ConnectionType.ssh,
-    this.rdpScaleMode = RdpScaleMode.fit,
+    this.rdpScaleMode = RdpScaleMode.clientResolution,
     DateTime? createdAt,
     DateTime? updatedAt,
   })  : port = port ?? type.defaultPort,
@@ -172,7 +172,7 @@ enum RdpScaleMode {
       case 'clientResolution':
         return RdpScaleMode.clientResolution;
       default:
-        return RdpScaleMode.fit;
+        return RdpScaleMode.clientResolution;
     }
   }
 
