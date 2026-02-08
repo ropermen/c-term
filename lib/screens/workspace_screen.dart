@@ -11,7 +11,8 @@ import 'connection_form_screen.dart';
 import 'login_screen.dart';
 import 'terminal_screen.dart';
 import 'user_management_screen.dart';
-import '../widgets/rdp_view_panel.dart';
+import '../widgets/rdp_view_stub.dart'
+    if (dart.library.js_interop) '../widgets/rdp_view_panel.dart';
 
 class WorkspaceScreen extends StatefulWidget {
   const WorkspaceScreen({super.key});

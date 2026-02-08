@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/connections_provider.dart';
@@ -6,8 +7,11 @@ import '../models/ssh_connection.dart';
 import '../services/storage_service.dart';
 import '../services/auth_service.dart';
 import '../services/update_service.dart';
+import '../services/api_service.dart';
 import 'connection_form_screen.dart';
 import 'terminal_screen.dart';
+import 'login_screen.dart';
+import 'user_management_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -19,15 +23,36 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _searchController = TextEditingController();
   final UpdateService _updateService = UpdateService();
+  final StorageService _storageService = StorageService();
   String _searchQuery = '';
+  double _fontSize = StorageService.defaultFontSize;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ConnectionsProvider>().loadConnections();
+    _loadFontSize();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final connProvider = context.read<ConnectionsProvider>();
+      await connProvider.loadConnections();
+      if (mounted) {
+        await context.read<TerminalProvider>().restoreSessions(connProvider.connections);
+      }
       _checkForUpdates();
     });
+  }
+
+  Future<void> _loadFontSize() async {
+    final size = await _storageService.getTerminalFontSize();
+    if (mounted) {
+      setState(() => _fontSize = size);
+    }
+  }
+
+  Future<void> _setFontSize(double size) async {
+    await _storageService.setTerminalFontSize(size);
+    if (mounted) {
+      setState(() => _fontSize = size);
+    }
   }
 
   Future<void> _checkForUpdates() async {
@@ -115,7 +140,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-  List<SSHConnection> _filterConnections(List<SSHConnection> connections) {
+  List<Connection> _filterConnections(List<Connection> connections) {
     if (_searchQuery.isEmpty) return connections;
     final query = _searchQuery.toLowerCase();
     return connections.where((c) {
@@ -125,8 +150,28 @@ class _HomeScreenState extends State<HomeScreen> {
     }).toList();
   }
 
-  Future<void> _connectToServer(SSHConnection connection) async {
+  Future<void> _connectToServer(Connection connection) async {
     final terminalProvider = context.read<TerminalProvider>();
+
+    if (connection.type == ConnectionType.rdp && !kIsWeb) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Conexoes RDP so estao disponiveis na versao web do koder.'),
+          backgroundColor: Color(0xFFE5A00D),
+        ),
+      );
+      return;
+    }
+
+    if (connection.type == ConnectionType.vnc) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Suporte a VNC sera adicionado em breve.'),
+          backgroundColor: Color(0xFF0DBC79),
+        ),
+      );
+      return;
+    }
 
     if (terminalProvider.hasSession(connection.id)) {
       terminalProvider.setActiveSession(connection.id);
@@ -168,14 +213,14 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void _editConnection(SSHConnection connection) {
+  void _editConnection(Connection connection) {
     showDialog(
       context: context,
       builder: (_) => ConnectionFormScreen(connection: connection, asDialog: true),
     );
   }
 
-  Future<void> _deleteConnection(SSHConnection connection) async {
+  Future<void> _deleteConnection(Connection connection) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -196,6 +241,10 @@ class _HomeScreenState extends State<HomeScreen> {
     );
 
     if (confirmed == true && mounted) {
+      final terminalProvider = context.read<TerminalProvider>();
+      if (terminalProvider.hasSession(connection.id)) {
+        terminalProvider.closeSession(connection.id);
+      }
       await context.read<ConnectionsProvider>().deleteConnection(connection.id);
     }
   }
@@ -205,11 +254,181 @@ class _HomeScreenState extends State<HomeScreen> {
     provider.reorderConnections(oldIndex, newIndex);
   }
 
+  Future<void> _logout() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF2C2C2E),
+        title: const Text('Sair', style: TextStyle(color: Colors.white)),
+        content: const Text('Deseja sair do koder?', style: TextStyle(color: Colors.white)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Sair'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && mounted) {
+      await ApiService().logout();
+      if (mounted) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const LoginScreen()),
+          (_) => false,
+        );
+      }
+    }
+  }
+
+  void _showChangePasswordDialog() {
+    final currentPasswordController = TextEditingController();
+    final newPasswordController = TextEditingController();
+    final confirmPasswordController = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+    bool saving = false;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          backgroundColor: const Color(0xFF2C2C2E),
+          title: const Text('Alterar senha', style: TextStyle(color: Colors.white)),
+          content: Form(
+            key: formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  controller: currentPasswordController,
+                  obscureText: true,
+                  style: const TextStyle(color: Colors.white, fontSize: 14),
+                  decoration: InputDecoration(
+                    labelText: 'Senha atual',
+                    labelStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
+                    prefixIcon: Icon(Icons.lock_outline, color: Colors.grey.shade400, size: 20),
+                    filled: true,
+                    fillColor: const Color(0xFF3A3A3C),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide.none,
+                    ),
+                    isDense: true,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  ),
+                  validator: (v) => v == null || v.isEmpty ? 'Informe a senha atual' : null,
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: newPasswordController,
+                  obscureText: true,
+                  style: const TextStyle(color: Colors.white, fontSize: 14),
+                  decoration: InputDecoration(
+                    labelText: 'Nova senha',
+                    labelStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
+                    prefixIcon: Icon(Icons.lock_reset, color: Colors.grey.shade400, size: 20),
+                    filled: true,
+                    fillColor: const Color(0xFF3A3A3C),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide.none,
+                    ),
+                    isDense: true,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  ),
+                  validator: (v) => v == null || v.isEmpty ? 'Informe a nova senha' : null,
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: confirmPasswordController,
+                  obscureText: true,
+                  style: const TextStyle(color: Colors.white, fontSize: 14),
+                  decoration: InputDecoration(
+                    labelText: 'Confirmar nova senha',
+                    labelStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
+                    prefixIcon: Icon(Icons.lock_reset, color: Colors.grey.shade400, size: 20),
+                    filled: true,
+                    fillColor: const Color(0xFF3A3A3C),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide.none,
+                    ),
+                    isDense: true,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  ),
+                  validator: (v) {
+                    if (v == null || v.isEmpty) return 'Confirme a nova senha';
+                    if (v != newPasswordController.text) return 'As senhas nao coincidem';
+                    return null;
+                  },
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: Text('Cancelar', style: TextStyle(color: Colors.grey.shade400)),
+            ),
+            ElevatedButton(
+              onPressed: saving
+                  ? null
+                  : () async {
+                      if (!formKey.currentState!.validate()) return;
+                      setDialogState(() => saving = true);
+                      try {
+                        await ApiService().changePassword(
+                          currentPasswordController.text,
+                          newPasswordController.text,
+                        );
+                        if (ctx.mounted) {
+                          Navigator.of(ctx).pop();
+                          ScaffoldMessenger.of(this.context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Senha alterada com sucesso'),
+                              backgroundColor: Color(0xFF0DBC79),
+                            ),
+                          );
+                        }
+                      } catch (e) {
+                        if (ctx.mounted) {
+                          ScaffoldMessenger.of(this.context).showSnackBar(
+                            SnackBar(
+                              content: Text(e.toString().replaceFirst('Exception: ', '')),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
+                      } finally {
+                        if (ctx.mounted) setDialogState(() => saving = false);
+                      }
+                    },
+              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF5B8DEF)),
+              child: saving
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black),
+                    )
+                  : const Text('Alterar', style: TextStyle(color: Colors.black)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _showSettingsDialog() async {
     final storageService = StorageService();
     final authService = AuthService();
+    final apiService = ApiService();
     bool biometricEnabled = await storageService.isBiometricEnabled();
     bool biometricAvailable = await authService.isBiometricAvailable();
+    final isAdmin = apiService.currentUser?.isAdmin ?? false;
 
     if (!mounted) return;
 
@@ -218,20 +437,92 @@ class _HomeScreenState extends State<HomeScreen> {
       builder: (ctx) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
           title: const Text('Configuracoes'),
-          content: SwitchListTile(
-            title: const Text('Autenticacao biometrica'),
-            subtitle: Text(
-              biometricAvailable
-                  ? 'Exigir biometria ao abrir o app'
-                  : 'Nao disponivel neste dispositivo',
-            ),
-            value: biometricEnabled,
-            onChanged: biometricAvailable
-                ? (value) async {
-                    await storageService.setBiometricEnabled(value);
-                    setDialogState(() => biometricEnabled = value);
-                  }
-                : null,
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SwitchListTile(
+                title: const Text('Autenticacao biometrica'),
+                subtitle: Text(
+                  biometricAvailable
+                      ? 'Exigir biometria ao abrir o app'
+                      : 'Nao disponivel neste dispositivo',
+                ),
+                value: biometricEnabled,
+                onChanged: biometricAvailable
+                    ? (value) async {
+                        await storageService.setBiometricEnabled(value);
+                        setDialogState(() => biometricEnabled = value);
+                      }
+                    : null,
+              ),
+              const Divider(),
+              ListTile(
+                title: const Text('Tamanho da fonte'),
+                subtitle: Text('${_fontSize.toInt()} pt'),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.remove_circle_outline),
+                      onPressed: _fontSize > 8
+                          ? () {
+                              final newSize = _fontSize - 1;
+                              setDialogState(() {});
+                              _setFontSize(newSize);
+                            }
+                          : null,
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.add_circle_outline),
+                      onPressed: _fontSize < 32
+                          ? () {
+                              final newSize = _fontSize + 1;
+                              setDialogState(() {});
+                              _setFontSize(newSize);
+                            }
+                          : null,
+                    ),
+                  ],
+                ),
+              ),
+              if (isAdmin) ...[
+                const Divider(),
+                ListTile(
+                  leading: const Icon(Icons.people, color: Color(0xFF5B8DEF)),
+                  title: const Text('Gerenciar Usuarios'),
+                  subtitle: const Text('Criar, editar e excluir usuarios'),
+                  onTap: () {
+                    Navigator.of(ctx).pop();
+                    Navigator.of(this.context).push(
+                      MaterialPageRoute(builder: (_) => const UserManagementScreen()),
+                    );
+                  },
+                ),
+              ],
+              const Divider(),
+              ListTile(
+                leading: const Icon(Icons.lock_reset, color: Color(0xFF5B8DEF)),
+                title: const Text('Alterar senha'),
+                subtitle: const Text('Trocar a senha da sua conta'),
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                  _showChangePasswordDialog();
+                },
+              ),
+              const Divider(),
+              ListTile(
+                leading: const Icon(Icons.logout, color: Colors.red),
+                title: const Text('Sair', style: TextStyle(color: Colors.red)),
+                subtitle: Text(
+                  'Logado como ${apiService.currentUser?.username ?? ""}',
+                  style: TextStyle(color: Colors.grey.shade500),
+                ),
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                  _logout();
+                },
+              ),
+            ],
           ),
           actions: [
             TextButton(
@@ -239,6 +530,78 @@ class _HomeScreenState extends State<HomeScreen> {
               child: const Text('Fechar'),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  void _showNewConnectionSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF2C2C2E),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Nova conexao',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              _ConnectionTypeOption(
+                icon: Icons.terminal,
+                label: 'SSH',
+                subtitle: 'Terminal remoto seguro',
+                color: const Color(0xFF5B8DEF),
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                  showDialog(
+                    context: context,
+                    builder: (_) => const ConnectionFormScreen(
+                      connectionType: ConnectionType.ssh,
+                      asDialog: true,
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 8),
+              _ConnectionTypeOption(
+                icon: Icons.desktop_windows,
+                label: 'RDP',
+                subtitle: 'Area de trabalho remota',
+                color: const Color(0xFFE5A00D),
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                  showDialog(
+                    context: context,
+                    builder: (_) => const ConnectionFormScreen(
+                      connectionType: ConnectionType.rdp,
+                      asDialog: true,
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 8),
+              _ConnectionTypeOption(
+                icon: Icons.connected_tv,
+                label: 'VNC',
+                subtitle: 'Em breve',
+                color: const Color(0xFF0DBC79),
+                enabled: false,
+                onTap: () {},
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -312,7 +675,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Toque no + para adicionar uma conexao SSH',
+                    'Toque no + para adicionar uma conexao',
                     style: TextStyle(
                       color: Colors.grey.shade600,
                       fontSize: 14,
@@ -439,12 +802,7 @@ class _HomeScreenState extends State<HomeScreen> {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          showDialog(
-            context: context,
-            builder: (_) => const ConnectionFormScreen(asDialog: true),
-          );
-        },
+        onPressed: _showNewConnectionSheet,
         backgroundColor: const Color(0xFF5B8DEF),
         child: const Icon(Icons.add, color: Colors.black),
       ),
@@ -452,8 +810,71 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
+class _ConnectionTypeOption extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String subtitle;
+  final Color color;
+  final VoidCallback onTap;
+  final bool enabled;
+
+  const _ConnectionTypeOption({
+    required this.icon,
+    required this.label,
+    required this.subtitle,
+    required this.color,
+    required this.onTap,
+    this.enabled = true,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Opacity(
+      opacity: enabled ? 1.0 : 0.5,
+      child: InkWell(
+        onTap: enabled ? onTap : null,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: color.withOpacity(0.3)),
+          ),
+          child: Row(
+            children: [
+              Icon(icon, color: color, size: 28),
+              const SizedBox(width: 16),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: TextStyle(
+                      color: color,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      color: Colors.grey.shade400,
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _ConnectionCard extends StatelessWidget {
-  final SSHConnection connection;
+  final Connection connection;
   final VoidCallback onTap;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
@@ -468,11 +889,34 @@ class _ConnectionCard extends StatelessWidget {
     this.showDragHandle = false,
   });
 
+  IconData _iconForType(ConnectionType type) {
+    switch (type) {
+      case ConnectionType.ssh:
+        return Icons.terminal;
+      case ConnectionType.rdp:
+        return Icons.desktop_windows;
+      case ConnectionType.vnc:
+        return Icons.connected_tv;
+    }
+  }
+
+  Color _colorForType(ConnectionType type) {
+    switch (type) {
+      case ConnectionType.ssh:
+        return const Color(0xFF5B8DEF);
+      case ConnectionType.rdp:
+        return const Color(0xFFE5A00D);
+      case ConnectionType.vnc:
+        return const Color(0xFF0DBC79);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<TerminalProvider>(
       builder: (context, terminalProvider, _) {
         final isConnected = terminalProvider.hasSession(connection.id);
+        final typeColor = _colorForType(connection.type);
 
         return Card(
           color: const Color(0xFF2C2C2E),
@@ -500,15 +944,13 @@ class _ConnectionCard extends StatelessWidget {
                     height: 48,
                     decoration: BoxDecoration(
                       color: isConnected
-                          ? const Color(0xFF5B8DEF).withOpacity(0.2)
+                          ? typeColor.withOpacity(0.2)
                           : Colors.grey.withOpacity(0.2),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(
-                      Icons.dns,
-                      color: isConnected
-                          ? const Color(0xFF5B8DEF)
-                          : Colors.grey,
+                      _iconForType(connection.type),
+                      color: isConnected ? typeColor : Colors.grey,
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -535,13 +977,13 @@ class _ConnectionCard extends StatelessWidget {
                                   vertical: 2,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF5B8DEF).withOpacity(0.2),
+                                  color: typeColor.withOpacity(0.2),
                                   borderRadius: BorderRadius.circular(4),
                                 ),
-                                child: const Text(
+                                child: Text(
                                   'Conectado',
                                   style: TextStyle(
-                                    color: Color(0xFF5B8DEF),
+                                    color: typeColor,
                                     fontSize: 12,
                                   ),
                                 ),

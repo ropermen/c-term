@@ -1,5 +1,7 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import 'home_screen.dart';
 import 'workspace_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -20,6 +22,11 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _obscurePassword = true;
   String? _error;
 
+  Widget _getTargetScreen() {
+    if (kIsWeb) return const WorkspaceScreen();
+    return const HomeScreen();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -30,7 +37,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final restored = await _api.tryRestoreSession();
     if (restored && mounted) {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const WorkspaceScreen()),
+        MaterialPageRoute(builder: (_) => _getTargetScreen()),
       );
       return;
     }
@@ -53,7 +60,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (mounted) {
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const WorkspaceScreen()),
+          MaterialPageRoute(builder: (_) => _getTargetScreen()),
         );
       }
     } catch (e) {

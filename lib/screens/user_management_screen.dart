@@ -177,6 +177,158 @@ class _UserManagementDialogState extends State<UserManagementDialog> {
   }
 }
 
+class UserManagementScreen extends StatefulWidget {
+  const UserManagementScreen({super.key});
+
+  @override
+  State<UserManagementScreen> createState() => _UserManagementScreenState();
+}
+
+class _UserManagementScreenState extends State<UserManagementScreen> {
+  final _api = ApiService();
+  List<ApiUser> _users = [];
+  bool _loading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUsers();
+  }
+
+  Future<void> _loadUsers() async {
+    setState(() { _loading = true; _error = null; });
+    try {
+      _users = await _api.listUsers();
+    } catch (e) {
+      _error = e.toString().replaceFirst('Exception: ', '');
+    }
+    if (mounted) setState(() => _loading = false);
+  }
+
+  Future<void> _showUserForm({ApiUser? user}) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (_) => _UserFormDialog(user: user),
+    );
+    if (result == true) _loadUsers();
+  }
+
+  Future<void> _deleteUser(ApiUser user) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF2C2C2E),
+        title: const Text('Excluir usuario', style: TextStyle(color: Colors.white)),
+        content: Text('Excluir "${user.username}"?', style: const TextStyle(color: Colors.white)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Excluir'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      try {
+        await _api.deleteUser(user.id);
+        _loadUsers();
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(e.toString().replaceFirst('Exception: ', '')), backgroundColor: Colors.red),
+          );
+        }
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF1C1C1E),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF2C2C2E),
+        title: const Text('Gerenciar Usuarios', style: TextStyle(color: Colors.white)),
+        iconTheme: const IconThemeData(color: Colors.white),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add, color: Color(0xFF5B8DEF)),
+            tooltip: 'Novo usuario',
+            onPressed: () => _showUserForm(),
+          ),
+        ],
+      ),
+      body: _loading
+          ? const Center(child: CircularProgressIndicator(color: Color(0xFF5B8DEF)))
+          : _error != null
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(_error!, style: TextStyle(color: Colors.red.shade300)),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: _loadUsers,
+                        child: const Text('Tentar novamente'),
+                      ),
+                    ],
+                  ),
+                )
+              : ListView.builder(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  itemCount: _users.length,
+                  itemBuilder: (context, index) {
+                    final user = _users[index];
+                    final isSelf = user.id == _api.currentUser?.id;
+                    return ListTile(
+                      leading: CircleAvatar(
+                        radius: 20,
+                        backgroundColor: user.isAdmin
+                            ? const Color(0xFF5B8DEF).withOpacity(0.2)
+                            : Colors.grey.withOpacity(0.2),
+                        child: Icon(
+                          user.isAdmin ? Icons.admin_panel_settings : Icons.person,
+                          size: 20,
+                          color: user.isAdmin ? const Color(0xFF5B8DEF) : Colors.grey,
+                        ),
+                      ),
+                      title: Text(
+                        user.username,
+                        style: const TextStyle(color: Colors.white, fontSize: 15),
+                      ),
+                      subtitle: Text(
+                        '${user.displayName.isEmpty ? '-' : user.displayName} · ${user.role}',
+                        style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+                      ),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.edit, size: 20, color: Colors.grey),
+                            onPressed: () => _showUserForm(user: user),
+                            tooltip: 'Editar',
+                          ),
+                          if (!isSelf)
+                            IconButton(
+                              icon: const Icon(Icons.delete, size: 20, color: Colors.red),
+                              onPressed: () => _deleteUser(user),
+                              tooltip: 'Excluir',
+                            ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+    );
+  }
+}
+
 class _UserFormDialog extends StatefulWidget {
   final ApiUser? user;
   const _UserFormDialog({this.user});

@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:xterm/xterm.dart';
+import '../models/ssh_connection.dart';
 import '../providers/terminal_provider.dart';
 import '../services/storage_service.dart';
 import '../widgets/terminal_keyboard.dart';
@@ -149,6 +150,52 @@ class _TerminalScreenState extends State<TerminalScreen> {
     );
   }
 
+  Widget _buildSessionContent(TerminalSession session) {
+    if (session.connection.type == ConnectionType.rdp) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.desktop_windows, size: 48, color: Colors.grey.shade700),
+            const SizedBox(height: 16),
+            Text(
+              'RDP nao disponivel nesta plataforma',
+              style: TextStyle(color: Colors.grey.shade400, fontSize: 18),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Use a versao web do koder para conexoes RDP.',
+              style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (session.connection.type == ConnectionType.vnc) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.connected_tv, size: 48, color: Colors.grey.shade700),
+            const SizedBox(height: 16),
+            Text(
+              'VNC — em breve',
+              style: TextStyle(color: Colors.grey.shade400, fontSize: 18),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Suporte a VNC sera adicionado em uma atualizacao futura.',
+              style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return TerminalViewPanel(session: session, fontSize: _fontSize);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<TerminalProvider>(
@@ -258,7 +305,7 @@ class _TerminalScreenState extends State<TerminalScreen> {
                 : null,
           ),
           body: provider.activeSession != null
-              ? TerminalViewPanel(session: provider.activeSession!, fontSize: _fontSize)
+              ? _buildSessionContent(provider.activeSession!)
               : const Center(
                   child: Text(
                     'Selecione uma sessao',
@@ -275,6 +322,19 @@ class _TabBar extends StatelessWidget {
   final TerminalProvider provider;
 
   const _TabBar({required this.provider});
+
+  IconData _sessionIcon(TerminalSession session) {
+    if (session.isConnecting) return Icons.hourglass_empty;
+    if (session.error != null && !session.isConnected) return Icons.error_outline;
+    switch (session.connection.type) {
+      case ConnectionType.ssh:
+        return Icons.terminal;
+      case ConnectionType.rdp:
+        return Icons.desktop_windows;
+      case ConnectionType.vnc:
+        return Icons.connected_tv;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -306,11 +366,7 @@ class _TabBar extends StatelessWidget {
               child: Row(
                 children: [
                   Icon(
-                    session.isConnected
-                        ? Icons.terminal
-                        : session.isConnecting
-                            ? Icons.hourglass_empty
-                            : Icons.error_outline,
+                    _sessionIcon(session),
                     color: isActive
                         ? const Color(0xFF5B8DEF)
                         : Colors.grey,

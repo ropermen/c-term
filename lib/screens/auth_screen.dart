@@ -1,6 +1,8 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import '../services/storage_service.dart';
+import 'home_screen.dart';
 import 'workspace_screen.dart';
 
 class AuthScreen extends StatefulWidget {
@@ -16,6 +18,11 @@ class _AuthScreenState extends State<AuthScreen> {
   bool _isAuthenticating = false;
   String? _error;
 
+  Widget _getTargetScreen() {
+    if (kIsWeb) return const WorkspaceScreen();
+    return const HomeScreen();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -28,7 +35,7 @@ class _AuthScreenState extends State<AuthScreen> {
     if (!biometricEnabled) {
       if (mounted) {
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const WorkspaceScreen()),
+          MaterialPageRoute(builder: (_) => _getTargetScreen()),
         );
       }
       return;
@@ -48,7 +55,7 @@ class _AuthScreenState extends State<AuthScreen> {
     if (!isAvailable) {
       if (mounted) {
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const WorkspaceScreen()),
+          MaterialPageRoute(builder: (_) => _getTargetScreen()),
         );
       }
       return;
@@ -65,7 +72,7 @@ class _AuthScreenState extends State<AuthScreen> {
 
       if (success) {
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const WorkspaceScreen()),
+          MaterialPageRoute(builder: (_) => _getTargetScreen()),
         );
       } else {
         setState(() {

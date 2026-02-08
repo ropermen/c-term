@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/ssh_connection.dart';
@@ -209,6 +210,29 @@ class _ConnectionFormScreenState extends State<ConnectionFormScreen> {
     final spacing = compact ? 8.0 : 16.0;
 
     return [
+      if (_type == ConnectionType.rdp && !kIsWeb) ...[
+        Container(
+          padding: EdgeInsets.all(compact ? 10 : 14),
+          decoration: BoxDecoration(
+            color: const Color(0xFFE5A00D).withOpacity(0.15),
+            borderRadius: BorderRadius.circular(compact ? 8 : 12),
+            border: Border.all(color: const Color(0xFFE5A00D).withOpacity(0.3)),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.info_outline, color: Color(0xFFE5A00D), size: 20),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Conexoes RDP so podem ser usadas na versao web do koder.',
+                  style: TextStyle(color: const Color(0xFFE5A00D), fontSize: compact ? 12 : 13),
+                ),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(height: spacing),
+      ],
       _buildTextField(
         controller: _nameController,
         label: 'Nome da conexão',
