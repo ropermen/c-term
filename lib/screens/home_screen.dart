@@ -169,10 +169,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _editConnection(SSHConnection connection) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => ConnectionFormScreen(connection: connection),
-      ),
+    showDialog(
+      context: context,
+      builder: (_) => ConnectionFormScreen(connection: connection, asDialog: true),
     );
   }
 
@@ -441,8 +440,9 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const ConnectionFormScreen()),
+          showDialog(
+            context: context,
+            builder: (_) => const ConnectionFormScreen(asDialog: true),
           );
         },
         backgroundColor: const Color(0xFF5B8DEF),

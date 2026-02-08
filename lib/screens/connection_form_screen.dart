@@ -135,48 +135,49 @@ class _ConnectionFormScreenState extends State<ConnectionFormScreen> {
 
     return Dialog(
       backgroundColor: const Color(0xFF1C1C1E),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 80, vertical: 40),
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 440, maxHeight: 600),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Title bar
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: const BoxDecoration(
-                color: Color(0xFF2C2C2E),
-                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      title,
-                      style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
-                    ),
+        constraints: const BoxConstraints(maxWidth: 380),
+        child: Form(
+          key: _formKey,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Title bar
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 8, 0),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          title,
+                          style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close, color: Colors.grey, size: 18),
+                        onPressed: () => Navigator.of(context).pop(),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                      ),
+                    ],
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.close, color: Colors.grey, size: 20),
-                    onPressed: () => Navigator.of(context).pop(),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
-                  ),
-                ],
-              ),
-            ),
-            // Form body
-            Flexible(
-              child: Form(
-                key: _formKey,
-                child: ListView(
-                  shrinkWrap: true,
-                  padding: const EdgeInsets.all(16),
-                  children: _buildFormFields(compact: true),
                 ),
-              ),
+                const Divider(color: Color(0xFF3A3A3C), height: 1),
+                // Form body
+                Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: _buildFormFields(compact: true),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -205,7 +206,7 @@ class _ConnectionFormScreenState extends State<ConnectionFormScreen> {
   }
 
   List<Widget> _buildFormFields({required bool compact}) {
-    final spacing = compact ? 10.0 : 16.0;
+    final spacing = compact ? 8.0 : 16.0;
 
     return [
       _buildTextField(
@@ -394,9 +395,9 @@ class _ConnectionFormScreenState extends State<ConnectionFormScreen> {
         _buildPasswordField(compact: compact),
       ],
 
-      SizedBox(height: compact ? 16 : 32),
+      SizedBox(height: compact ? 12 : 32),
       SizedBox(
-        height: compact ? 40 : 50,
+        height: compact ? 36 : 50,
         child: ElevatedButton(
           onPressed: _isSaving ? null : _saveConnection,
           style: ElevatedButton.styleFrom(
@@ -485,7 +486,7 @@ class _ConnectionFormScreenState extends State<ConnectionFormScreen> {
         fillColor: const Color(0xFF2C2C2E),
         isDense: compact,
         contentPadding: compact
-            ? const EdgeInsets.symmetric(horizontal: 12, vertical: 10)
+            ? const EdgeInsets.symmetric(horizontal: 10, vertical: 8)
             : null,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(radius),
