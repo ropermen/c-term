@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'providers/connections_provider.dart';
 import 'providers/terminal_provider.dart';
 import 'providers/keyboard_provider.dart';
-import 'screens/auth_screen.dart';
+import 'screens/login_screen.dart';
 
 class CTermApp extends StatelessWidget {
   const CTermApp({super.key});
@@ -128,7 +128,7 @@ class CTermApp extends StatelessWidget {
             thickness: 1,
           ),
         ),
-        home: const AuthScreen(),
+        home: const LoginScreen(),
       ),
     );
   }

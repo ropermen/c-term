@@ -8,7 +8,7 @@ COPY . .
 RUN flutter build web --release
 
 # Stage 2: Build RDP proxy (Rust)
-FROM rust:1.86-bookworm AS rust-build
+FROM rust:bookworm AS rust-build
 
 WORKDIR /proxy
 COPY rdp-proxy/Cargo.toml rdp-proxy/Cargo.lock* ./
@@ -31,6 +31,9 @@ COPY --from=rust-build /proxy/target/release/rdp-proxy /usr/local/bin/rdp-proxy
 
 # Supervisor config to run both nginx and rdp-proxy
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+RUN mkdir -p /data
+VOLUME ["/data"]
 
 EXPOSE 18884
 

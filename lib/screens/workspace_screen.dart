@@ -6,8 +6,11 @@ import '../providers/terminal_provider.dart';
 import '../services/storage_service.dart';
 import '../services/auth_service.dart';
 import '../services/update_service.dart';
+import '../services/api_service.dart';
 import 'connection_form_screen.dart';
+import 'login_screen.dart';
 import 'terminal_screen.dart';
+import 'user_management_screen.dart';
 import '../widgets/rdp_view_panel.dart';
 
 class WorkspaceScreen extends StatefulWidget {
@@ -173,11 +176,44 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
     await terminalProvider.createSession(connection);
   }
 
+  Future<void> _logout() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF2C2C2E),
+        title: const Text('Sair', style: TextStyle(color: Colors.white)),
+        content: const Text('Deseja sair do koder?', style: TextStyle(color: Colors.white)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Sair'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && mounted) {
+      await ApiService().logout();
+      if (mounted) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const LoginScreen()),
+          (_) => false,
+        );
+      }
+    }
+  }
+
   Future<void> _showSettingsDialog() async {
     final storageService = StorageService();
     final authService = AuthService();
+    final apiService = ApiService();
     bool biometricEnabled = await storageService.isBiometricEnabled();
     bool biometricAvailable = await authService.isBiometricAvailable();
+    final isAdmin = apiService.currentUser?.isAdmin ?? false;
 
     if (!mounted) return;
 
@@ -233,6 +269,34 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
                     ),
                   ],
                 ),
+              ),
+              if (isAdmin) ...[
+                const Divider(),
+                ListTile(
+                  leading: const Icon(Icons.people, color: Color(0xFF5B8DEF)),
+                  title: const Text('Gerenciar Usuarios'),
+                  subtitle: const Text('Criar, editar e excluir usuarios'),
+                  onTap: () {
+                    Navigator.of(ctx).pop();
+                    showDialog(
+                      context: this.context,
+                      builder: (_) => const UserManagementDialog(),
+                    );
+                  },
+                ),
+              ],
+              const Divider(),
+              ListTile(
+                leading: const Icon(Icons.logout, color: Colors.red),
+                title: const Text('Sair', style: TextStyle(color: Colors.red)),
+                subtitle: Text(
+                  'Logado como ${apiService.currentUser?.username ?? ""}',
+                  style: TextStyle(color: Colors.grey.shade500),
+                ),
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                  _logout();
+                },
               ),
             ],
           ),

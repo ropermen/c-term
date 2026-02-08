@@ -4,13 +4,21 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-ironrdp-rdcleanpath = "0.2"
+axum = { version = "0.7", features = ["ws"] }
 tokio = { version = "1", features = ["full"] }
-tokio-tungstenite = "0.24"
 tokio-native-tls = "0.3"
 native-tls = "0.2"
-der = { version = "0.7", features = ["alloc"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+jsonwebtoken = "9"
+rusqlite = { version = "0.31", features = ["bundled"] }
+bcrypt = "0.15"
+uuid = { version = "1", features = ["v4"] }
+tower-http = { version = "0.5", features = ["cors"] }
+tower = "0.4"
 futures-util = { version = "0.3", features = ["sink"] }
+ironrdp-rdcleanpath = "0.2"
+der = { version = "0.7", features = ["alloc"] }
 anyhow = "1"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
